@@ -7,12 +7,14 @@ import (
 
 	"github.com/joho/godotenv"
 	"github.com/lwlee2608/adder"
-    "github.com/lwlee2608/learn-neo4j/internal/api/http"
+	"github.com/lwlee2608/learn-neo4j/internal/api/http"
+	n "github.com/lwlee2608/learn-neo4j/pkg/neo4j"
 )
 
 type Config struct {
-	Log  LogConfig
-	Http http.Config
+	Log   LogConfig
+	Http  http.Config
+	Neo4j n.Config
 }
 
 var config Config
