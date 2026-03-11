@@ -15,5 +15,7 @@ build:
 	$(GO) build -o bin/$(APP) $(LDFLAGS) cmd/$(APP)/*.go
 run:
 	$(GO) run $(LDFLAGS) cmd/$(APP)/*.go
+seed:
+	$(GO) run cmd/seed-data/main.go
 test:
 	$(GO) test -v ./...
