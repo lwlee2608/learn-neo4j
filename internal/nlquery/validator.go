@@ -65,7 +65,7 @@ func ValidatePlan(plan *Plan, schema GraphSchema) error {
 }
 
 func validateLabels(query string, schema GraphSchema) error {
-	allowed := schema.allowedLabels()
+	allowed := schema.AllowedLabels()
 	matches := labelPattern.FindAllStringSubmatch(query, -1)
 	for _, match := range matches {
 		if _, ok := allowed[match[1]]; !ok {
@@ -76,7 +76,7 @@ func validateLabels(query string, schema GraphSchema) error {
 }
 
 func validateRelationshipTypes(query string, schema GraphSchema) error {
-	allowed := schema.allowedRelationshipTypes()
+	allowed := schema.AllowedRelationshipTypes()
 	matches := relationshipPattern.FindAllStringSubmatch(query, -1)
 	for _, match := range matches {
 		if _, ok := allowed[match[1]]; !ok {
@@ -87,7 +87,7 @@ func validateRelationshipTypes(query string, schema GraphSchema) error {
 }
 
 func validateProperties(query string, schema GraphSchema) error {
-	allowed := schema.allowedProperties()
+	allowed := schema.AllowedProperties()
 	matches := propertyPattern.FindAllStringSubmatch(query, -1)
 	for _, match := range matches {
 		prop := match[1]
