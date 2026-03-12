@@ -7,9 +7,8 @@
 Entities in the graph (similar to rows in a relational DB). Each node can have one or more **labels** that describe its type.
 
 ```
-(:Person)
-(:Movie)
-(:Person:Actor)   -- multiple labels
+(:Company)
+(:Company:ChipDesigner)   -- multiple labels
 ```
 
 ### Relationships
@@ -17,9 +16,11 @@ Entities in the graph (similar to rows in a relational DB). Each node can have o
 Named, directed edges between nodes. They always have a type and a direction.
 
 ```
-(:Person)-[:ACTED_IN]->(:Movie)
-(:Person)-[:DIRECTED]->(:Movie)
-(:Person)-[:FRIENDS_WITH]->(:Person)
+(:Company)-[:SUPPLIES_EQUIPMENT_TO]->(:Company)
+(:Company)-[:MANUFACTURES_FOR]->(:Company)
+(:Company)-[:SUPPLIES_CHIPS_TO]->(:Company)
+(:Company)-[:PROVIDES_CLOUD_FOR]->(:Company)
+(:Company)-[:COMPETES_WITH]->(:Company)
 ```
 
 ### Properties
@@ -27,8 +28,7 @@ Named, directed edges between nodes. They always have a type and a direction.
 Key-value pairs stored on both nodes and relationships.
 
 ```
-(:Person {name: "Alice", born: 1990})
-[:ACTED_IN {role: "Neo"}]
+(:Company {name: "NVIDIA", type: "chip_designer", founded: 1993, hq: "Santa Clara"})
 ```
 
 ## Graph vs Relational
@@ -49,5 +49,6 @@ The key advantage: relationships are first-class citizens, not join tables. Trav
 - Recommendation engines
 - Fraud detection (finding suspicious patterns)
 - Knowledge graphs
+- Supply chain analysis
 - Network/IT infrastructure mapping
 - Dependency analysis

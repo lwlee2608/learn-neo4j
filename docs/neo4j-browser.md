@@ -17,50 +17,58 @@ Run `make seed` first to populate the database.
 ### See everything in the graph
 
 ```cypher
-MATCH (n) RETURN n
+MATCH (n)-[r]->(m) RETURN n, r, m
 ```
 
 Shows all nodes and relationships as an interactive graph. Drag nodes around, click them to see properties.
 
-### Explore a specific actor
+### Explore a specific company
 
 ```cypher
-MATCH (p:Person {name: "Keanu Reeves"})-[r]->(m) RETURN p, r, m
+MATCH (c:Company {name: "NVIDIA"})-[r]-(other) RETURN c, r, other
 ```
 
-### Find co-actors
+### Full supply chain for an AI lab
 
 ```cypher
-MATCH (p:Person {name: "Keanu Reeves"})-[:ACTED_IN]->(m)<-[:ACTED_IN]-(coactor)
-RETURN p, m, coactor
+MATCH path = (supplier)-[*1..3]->(c:Company {name: "Anthropic"})
+RETURN path
 ```
 
-### All co-actor pairs
+Traces the chain: ASML → TSMC → NVIDIA → Anthropic, plus AWS → Anthropic.
+
+### All competitors in the graph
 
 ```cypher
-MATCH (p:Person)-[:ACTED_IN]->(m)<-[:ACTED_IN]-(other)
-WHERE p <> other
-RETURN p.name, other.name, m.title
-ORDER BY p.name
+MATCH (a:Company)-[:COMPETES_WITH]->(b:Company)
+RETURN a, b
 ```
 
-### Shortest path between two actors
+### Companies by type
+
+```cypher
+MATCH (c:Company)
+RETURN c.type AS type, collect(c.name) AS companies
+ORDER BY type
+```
+
+### Shortest path between two companies
 
 ```cypher
 MATCH path = shortestPath(
-  (a:Person {name: "Hugo Weaving"})-[*..10]-(b:Person {name: "Keanu Reeves"})
+  (a:Company {name: "ASML"})-[*..10]-(b:Company {name: "OpenAI"})
 )
 RETURN path
 ```
 
-Note: `shortestPath` only works when a path actually exists. The `[*..10]` sets an upper bound on hops (unbounded `[*]` triggers a warning). With the seed data, some actor clusters are isolated — e.g. Tom Hanks and Keanu Reeves share no connecting path.
+Shows the supply chain path: ASML → TSMC → NVIDIA → OpenAI.
 
 ### Who has the most relationships?
 
 ```cypher
-MATCH (p:Person)-[r]->(m:Movie)
-RETURN p.name, type(r) AS relationship, count(m) AS count
-ORDER BY count DESC
+MATCH (c:Company)-[r]-()
+RETURN c.name, count(r) AS connections
+ORDER BY connections DESC
 ```
 
 This shows as a table — click the table icon on the result panel to switch views.
@@ -86,7 +94,6 @@ Type these in the command bar:
 
 - `:help` — general help
 - `:help cypher` — Cypher cheat sheet
-- `:play movies` — Neo4j's built-in interactive movie tutorial
 
 ## Keyboard Shortcuts
 

@@ -14,6 +14,14 @@ docker compose up -d
 - **Browser UI**: http://localhost:7474 (login: `neo4j` / `password`)
 - **Bolt endpoint**: `bolt://localhost:7687` (used by the Go app)
 
+## Seed Data
+
+```bash
+make seed
+```
+
+This populates Neo4j with AI supply chain companies and their relationships.
+
 ## Run the App
 
 ```bash
@@ -25,26 +33,19 @@ The server starts on http://localhost:8080.
 ## Try It Out
 
 ```bash
-# Create a movie
-curl -X POST localhost:8080/api/v1/movies -H 'Content-Type: application/json' \
-  -d '{"title":"The Matrix","released":1999,"tagline":"Welcome to the Real World"}'
-
-# Create a person
-curl -X POST localhost:8080/api/v1/persons -H 'Content-Type: application/json' \
-  -d '{"name":"Keanu Reeves","born":1964}'
+# Create a company
+curl -X POST localhost:8080/api/v1/companies -H 'Content-Type: application/json' \
+  -d '{"name":"xAI","type":"ai_lab","founded":2023,"hq":"Austin"}'
 
 # Create a relationship
-curl -X POST localhost:8080/api/v1/acted-in -H 'Content-Type: application/json' \
-  -d '{"person_name":"Keanu Reeves","movie_title":"The Matrix","role":"Neo"}'
+curl -X POST localhost:8080/api/v1/relationships/supplies-chips-to -H 'Content-Type: application/json' \
+  -d '{"supplier_name":"NVIDIA","client_name":"xAI"}'
 
-# Get movie with cast
-curl localhost:8080/api/v1/movies/The%20Matrix
+# Get company with all relationships
+curl localhost:8080/api/v1/companies/NVIDIA
 
-# List all movies
-curl localhost:8080/api/v1/movies
-
-# List all persons
-curl localhost:8080/api/v1/persons
+# List all companies
+curl localhost:8080/api/v1/companies
 ```
 
 ## API Endpoints
@@ -52,9 +53,11 @@ curl localhost:8080/api/v1/persons
 | Method | Path | Description |
 |--------|------|-------------|
 | GET | `/health` | Health check |
-| POST | `/api/v1/movies` | Create a movie |
-| GET | `/api/v1/movies` | List all movies |
-| GET | `/api/v1/movies/:title` | Get movie with cast |
-| POST | `/api/v1/persons` | Create a person |
-| GET | `/api/v1/persons` | List all persons |
-| POST | `/api/v1/acted-in` | Create an ACTED_IN relationship |
+| POST | `/api/v1/companies` | Create a company |
+| GET | `/api/v1/companies` | List all companies |
+| GET | `/api/v1/companies/:name` | Get company with relationships |
+| POST | `/api/v1/relationships/supplies-equipment-to` | ASML supplies equipment to TSMC |
+| POST | `/api/v1/relationships/manufactures-for` | TSMC manufactures for NVIDIA |
+| POST | `/api/v1/relationships/supplies-chips-to` | NVIDIA supplies chips to OpenAI |
+| POST | `/api/v1/relationships/provides-cloud-for` | AWS provides cloud for Anthropic |
+| POST | `/api/v1/relationships/competes-with` | OpenAI competes with Anthropic |

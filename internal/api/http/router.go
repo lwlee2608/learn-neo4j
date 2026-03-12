@@ -12,7 +12,7 @@ type Config struct {
 }
 
 type Services struct {
-	Movie *service.MovieService
+	SupplyChain *service.SupplyChainService
 }
 
 func SetupRoute(engine *gin.Engine, srvs *Services) {
@@ -20,19 +20,23 @@ func SetupRoute(engine *gin.Engine, srvs *Services) {
 	engine.Use(middleware.ErrorHandler())
 
 	healthHandler := handler.NewHealthHandler()
-	movieHandler := handler.NewMovieHandler(srvs.Movie)
+	scHandler := handler.NewSupplyChainHandler(srvs.SupplyChain)
 
 	engine.GET("/health", healthHandler.Check)
 
 	apis := engine.Group("/api/v1")
 	{
-		apis.POST("/movies", movieHandler.CreateMovie)
-		apis.GET("/movies", movieHandler.ListMovies)
-		apis.GET("/movies/:title", movieHandler.GetMovie)
+		apis.POST("/companies", scHandler.CreateCompany)
+		apis.GET("/companies", scHandler.ListCompanies)
+		apis.GET("/companies/:name", scHandler.GetCompany)
 
-		apis.POST("/persons", movieHandler.CreatePerson)
-		apis.GET("/persons", movieHandler.ListPersons)
-
-		apis.POST("/acted-in", movieHandler.CreateActedIn)
+		rels := apis.Group("/relationships")
+		{
+			rels.POST("/supplies-equipment-to", scHandler.CreateSuppliesEquipmentTo)
+			rels.POST("/manufactures-for", scHandler.CreateManufacturesFor)
+			rels.POST("/supplies-chips-to", scHandler.CreateSuppliesChipsTo)
+			rels.POST("/provides-cloud-for", scHandler.CreateProvidesCloudFor)
+			rels.POST("/competes-with", scHandler.CreateCompetesWith)
+		}
 	}
 }

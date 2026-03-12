@@ -6,64 +6,61 @@ Cypher is Neo4j's declarative query language (like SQL for graphs). It uses ASCI
 
 ```cypher
 -- Create a node
-CREATE (m:Movie {title: "The Matrix", released: 1999, tagline: "Welcome to the Real World"})
-
--- Create a person
-CREATE (p:Person {name: "Keanu Reeves", born: 1964})
+CREATE (c:Company {name: "NVIDIA", type: "chip_designer", founded: 1993, hq: "Santa Clara"})
 
 -- Create a relationship (nodes must exist first)
-MATCH (p:Person {name: "Keanu Reeves"})
-MATCH (m:Movie {title: "The Matrix"})
-CREATE (p)-[:ACTED_IN {role: "Neo"}]->(m)
+MATCH (s:Company {name: "NVIDIA"})
+MATCH (c:Company {name: "OpenAI"})
+CREATE (s)-[:SUPPLIES_CHIPS_TO]->(c)
 ```
 
 ## MATCH — Read Data
 
 ```cypher
--- Find all movies
-MATCH (m:Movie) RETURN m
+-- Find all companies
+MATCH (c:Company) RETURN c
 
--- Find a specific person
-MATCH (p:Person {name: "Keanu Reeves"}) RETURN p
+-- Find a specific company
+MATCH (c:Company {name: "NVIDIA"}) RETURN c
 
--- Find who acted in a movie
-MATCH (p:Person)-[r:ACTED_IN]->(m:Movie {title: "The Matrix"})
-RETURN p.name, r.role
+-- Find who TSMC manufactures for
+MATCH (c:Company {name: "TSMC"})-[:MANUFACTURES_FOR]->(client:Company)
+RETURN client.name
 
--- Find all movies a person acted in
-MATCH (p:Person {name: "Keanu Reeves"})-[:ACTED_IN]->(m:Movie)
-RETURN m.title, m.released
+-- Find the full supply chain for an AI lab
+MATCH (c:Company {name: "OpenAI"})<-[r]-(supplier:Company)
+RETURN supplier.name, type(r) AS relationship
 
--- Find co-actors (2 hops)
-MATCH (p:Person {name: "Keanu Reeves"})-[:ACTED_IN]->(m)<-[:ACTED_IN]-(coactor)
-RETURN DISTINCT coactor.name
+-- Find competitors
+MATCH (c:Company {name: "NVIDIA"})-[:COMPETES_WITH]-(competitor:Company)
+RETURN competitor.name
 ```
 
 ## SET — Update Data
 
 ```cypher
 -- Update a property
-MATCH (p:Person {name: "Keanu Reeves"})
-SET p.born = 1964
+MATCH (c:Company {name: "NVIDIA"})
+SET c.founded = 1993
 
 -- Add a new property
-MATCH (m:Movie {title: "The Matrix"})
-SET m.budget = 63000000
+MATCH (c:Company {name: "NVIDIA"})
+SET c.market_cap = 3000000000000
 ```
 
 ## DELETE — Remove Data
 
 ```cypher
 -- Delete a node (must have no relationships)
-MATCH (p:Person {name: "Keanu Reeves"})
-DELETE p
+MATCH (c:Company {name: "NVIDIA"})
+DELETE c
 
 -- Delete a node and all its relationships
-MATCH (p:Person {name: "Keanu Reeves"})
-DETACH DELETE p
+MATCH (c:Company {name: "NVIDIA"})
+DETACH DELETE c
 
 -- Delete a specific relationship
-MATCH (p:Person {name: "Keanu Reeves"})-[r:ACTED_IN]->(m:Movie {title: "The Matrix"})
+MATCH (c:Company {name: "NVIDIA"})-[r:SUPPLIES_CHIPS_TO]->(o:Company {name: "OpenAI"})
 DELETE r
 ```
 
@@ -71,37 +68,37 @@ DELETE r
 
 ```cypher
 -- Like an upsert: creates the node only if it doesn't exist
-MERGE (p:Person {name: "Keanu Reeves"})
-ON CREATE SET p.born = 1964
-ON MATCH SET p.lastSeen = timestamp()
+MERGE (c:Company {name: "NVIDIA"})
+ON CREATE SET c.type = "chip_designer", c.founded = 1993
+ON MATCH SET c.lastSeen = timestamp()
 ```
 
 ## WHERE — Filtering
 
 ```cypher
 -- Filter with conditions
-MATCH (m:Movie)
-WHERE m.released > 2000
-RETURN m.title, m.released
-ORDER BY m.released
+MATCH (c:Company)
+WHERE c.founded > 2000
+RETURN c.name, c.type, c.founded
+ORDER BY c.founded
 
--- Pattern filtering
-MATCH (p:Person)
-WHERE NOT (p)-[:ACTED_IN]->()
-RETURN p.name
+-- Pattern filtering: companies with no outgoing relationships
+MATCH (c:Company)
+WHERE NOT (c)-[]->()
+RETURN c.name
 ```
 
 ## Aggregation
 
 ```cypher
--- Count movies per person
-MATCH (p:Person)-[:ACTED_IN]->(m:Movie)
-RETURN p.name, count(m) AS movieCount
-ORDER BY movieCount DESC
+-- Count relationships per company
+MATCH (c:Company)-[r]->()
+RETURN c.name, type(r) AS relationship, count(*) AS count
+ORDER BY count DESC
 
 -- Collect into a list
-MATCH (p:Person)-[r:ACTED_IN]->(m:Movie {title: "The Matrix"})
-RETURN m.title, collect({name: p.name, role: r.role}) AS cast
+MATCH (c:Company {name: "NVIDIA"})-[r]->(other:Company)
+RETURN type(r) AS relationship, collect(other.name) AS companies
 ```
 
 ## Tips
@@ -111,6 +108,5 @@ RETURN m.title, collect({name: p.name, role: r.role}) AS cast
 - `PROFILE` before a query runs it and shows actual performance metrics
 - Create indexes for frequently queried properties:
   ```cypher
-  CREATE INDEX FOR (m:Movie) ON (m.title)
-  CREATE INDEX FOR (p:Person) ON (p.name)
+  CREATE INDEX FOR (c:Company) ON (c.name)
   ```
