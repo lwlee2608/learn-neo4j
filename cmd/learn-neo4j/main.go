@@ -29,11 +29,11 @@ func main() {
 	}
 	defer neo4jClient.Close(context.Background())
 
-	movieRepo := repository.NewMovieRepository(neo4jClient)
-	movieSvc := service.NewMovieService(movieRepo)
+	scRepo := repository.NewSupplyChainRepository(neo4jClient)
+	scSvc := service.NewSupplyChainService(scRepo)
 
 	services := &internalhttp.Services{
-		Movie: movieSvc,
+		SupplyChain: scSvc,
 	}
 
 	gin.SetMode(gin.ReleaseMode)

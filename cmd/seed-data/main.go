@@ -33,141 +33,135 @@ func main() {
 	slog.Info("Cleared existing data")
 
 	// Create indexes
-	run(ctx, driver, "CREATE INDEX IF NOT EXISTS FOR (m:Movie) ON (m.title)", nil)
-	run(ctx, driver, "CREATE INDEX IF NOT EXISTS FOR (p:Person) ON (p.name)", nil)
+	run(ctx, driver, "CREATE INDEX IF NOT EXISTS FOR (c:Company) ON (c.name)", nil)
+	run(ctx, driver, "CREATE INDEX IF NOT EXISTS FOR (ch:Chip) ON (ch.name)", nil)
 	slog.Info("Created indexes")
 
-	// Movies
-	movies := []map[string]any{
-		{"title": "The Matrix", "released": 1999, "tagline": "Welcome to the Real World"},
-		{"title": "The Matrix Reloaded", "released": 2003, "tagline": "Free your mind"},
-		{"title": "The Matrix Revolutions", "released": 2003, "tagline": "Everything that has a beginning has an end"},
-		{"title": "John Wick", "released": 2014, "tagline": "Don't set him off"},
-		{"title": "Speed", "released": 1994, "tagline": "Get ready for rush hour"},
-		{"title": "The Devil's Advocate", "released": 1997, "tagline": "Evil has its winning ways"},
-		{"title": "A Few Good Men", "released": 1992, "tagline": "You can't handle the truth!"},
-		{"title": "Top Gun", "released": 1986, "tagline": "I feel the need, the need for speed"},
-		{"title": "Jerry Maguire", "released": 1996, "tagline": "Show me the money"},
-		{"title": "Forrest Gump", "released": 1994, "tagline": "Life is like a box of chocolates"},
-		{"title": "Cast Away", "released": 2000, "tagline": "At the edge of the world, his journey begins"},
-		{"title": "Inception", "released": 2010, "tagline": "Your mind is the scene of the crime"},
-		{"title": "The Dark Knight", "released": 2008, "tagline": "Why so serious?"},
-		{"title": "Interstellar", "released": 2014, "tagline": "Mankind was born on Earth. It was never meant to die here"},
-		{"title": "Fight Club", "released": 1999, "tagline": "The first rule of Fight Club is: you do not talk about Fight Club"},
+	// Companies
+	companies := []map[string]any{
+		{"name": "NVIDIA", "type": "chip_designer", "founded": 1993, "hq": "Santa Clara"},
+		{"name": "AMD", "type": "chip_designer", "founded": 1969, "hq": "Santa Clara"},
+		{"name": "Intel", "type": "chip_designer", "founded": 1968, "hq": "Santa Clara"},
+		{"name": "TSMC", "type": "manufacturer", "founded": 1987, "hq": "Hsinchu"},
+		{"name": "Samsung Foundry", "type": "manufacturer", "founded": 1969, "hq": "Suwon"},
+		{"name": "ASML", "type": "equipment_supplier", "founded": 1984, "hq": "Veldhoven"},
+		{"name": "OpenAI", "type": "ai_lab", "founded": 2015, "hq": "San Francisco"},
+		{"name": "Anthropic", "type": "ai_lab", "founded": 2021, "hq": "San Francisco"},
+		{"name": "Google DeepMind", "type": "ai_lab", "founded": 2010, "hq": "London"},
+		{"name": "Meta AI", "type": "ai_lab", "founded": 2013, "hq": "Menlo Park"},
+		{"name": "Moonshot AI", "type": "ai_lab", "founded": 2023, "hq": "Beijing"},
+		{"name": "z.ai", "type": "ai_lab", "founded": 2023, "hq": "San Francisco"},
+		{"name": "AWS", "type": "cloud_provider", "founded": 2006, "hq": "Seattle"},
+		{"name": "Microsoft Azure", "type": "cloud_provider", "founded": 2010, "hq": "Redmond"},
+		{"name": "Google Cloud", "type": "cloud_provider", "founded": 2008, "hq": "Sunnyvale"},
+		{"name": "Oracle Cloud", "type": "cloud_provider", "founded": 2016, "hq": "Austin"},
 	}
-	for _, m := range movies {
-		run(ctx, driver, "CREATE (:Movie {title: $title, released: $released, tagline: $tagline})", m)
+	for _, c := range companies {
+		run(ctx, driver, "CREATE (:Company {name: $name, type: $type, founded: $founded, hq: $hq})", c)
 	}
-	slog.Info("Created movies", "count", len(movies))
+	slog.Info("Created companies", "count", len(companies))
 
-	// Persons
-	persons := []map[string]any{
-		{"name": "Keanu Reeves", "born": 1964},
-		{"name": "Laurence Fishburne", "born": 1961},
-		{"name": "Carrie-Anne Moss", "born": 1967},
-		{"name": "Hugo Weaving", "born": 1960},
-		{"name": "Lana Wachowski", "born": 1965},
-		{"name": "Lilly Wachowski", "born": 1967},
-		{"name": "Tom Cruise", "born": 1962},
-		{"name": "Jack Nicholson", "born": 1937},
-		{"name": "Tom Hanks", "born": 1956},
-		{"name": "Al Pacino", "born": 1940},
-		{"name": "Leonardo DiCaprio", "born": 1974},
-		{"name": "Christian Bale", "born": 1974},
-		{"name": "Heath Ledger", "born": 1979},
-		{"name": "Christopher Nolan", "born": 1970},
-		{"name": "Brad Pitt", "born": 1963},
-		{"name": "Edward Norton", "born": 1969},
-		{"name": "David Fincher", "born": 1962},
-		{"name": "Robert Zemeckis", "born": 1951},
-		{"name": "Chad Stahelski", "born": 1968},
-		{"name": "Rob Reiner", "born": 1947},
-		{"name": "Tony Scott", "born": 1944},
-		{"name": "Cameron Crowe", "born": 1957},
-		{"name": "Taylor Hackford", "born": 1944},
-		{"name": "Jan de Bont", "born": 1943},
-		{"name": "Matthew McConaughey", "born": 1969},
+	// Chips
+	chips := []map[string]any{
+		{"name": "H100", "architecture": "Hopper", "year": 2022, "transistor_nm": 4},
+		{"name": "A100", "architecture": "Ampere", "year": 2020, "transistor_nm": 7},
+		{"name": "H200", "architecture": "Hopper", "year": 2024, "transistor_nm": 4},
+		{"name": "B200", "architecture": "Blackwell", "year": 2024, "transistor_nm": 4},
+		{"name": "MI300X", "architecture": "CDNA 3", "year": 2023, "transistor_nm": 5},
+		{"name": "Gaudi 3", "architecture": "Gaudi", "year": 2024, "transistor_nm": 5},
+		{"name": "TPU v5e", "architecture": "TPU", "year": 2023, "transistor_nm": 7},
+		{"name": "Trainium2", "architecture": "Trainium", "year": 2024, "transistor_nm": 3},
 	}
-	for _, p := range persons {
-		run(ctx, driver, "CREATE (:Person {name: $name, born: $born})", p)
+	for _, ch := range chips {
+		run(ctx, driver, "CREATE (:Chip {name: $name, architecture: $architecture, year: $year, transistor_nm: $transistor_nm})", ch)
 	}
-	slog.Info("Created persons", "count", len(persons))
+	slog.Info("Created chips", "count", len(chips))
 
-	// ACTED_IN relationships
-	actedIn := []map[string]any{
-		{"person": "Keanu Reeves", "movie": "The Matrix", "role": "Neo"},
-		{"person": "Laurence Fishburne", "movie": "The Matrix", "role": "Morpheus"},
-		{"person": "Carrie-Anne Moss", "movie": "The Matrix", "role": "Trinity"},
-		{"person": "Hugo Weaving", "movie": "The Matrix", "role": "Agent Smith"},
-
-		{"person": "Keanu Reeves", "movie": "The Matrix Reloaded", "role": "Neo"},
-		{"person": "Laurence Fishburne", "movie": "The Matrix Reloaded", "role": "Morpheus"},
-		{"person": "Carrie-Anne Moss", "movie": "The Matrix Reloaded", "role": "Trinity"},
-		{"person": "Hugo Weaving", "movie": "The Matrix Reloaded", "role": "Agent Smith"},
-
-		{"person": "Keanu Reeves", "movie": "The Matrix Revolutions", "role": "Neo"},
-		{"person": "Laurence Fishburne", "movie": "The Matrix Revolutions", "role": "Morpheus"},
-		{"person": "Carrie-Anne Moss", "movie": "The Matrix Revolutions", "role": "Trinity"},
-		{"person": "Hugo Weaving", "movie": "The Matrix Revolutions", "role": "Agent Smith"},
-
-		{"person": "Keanu Reeves", "movie": "John Wick", "role": "John Wick"},
-		{"person": "Keanu Reeves", "movie": "Speed", "role": "Jack Traven"},
-		{"person": "Keanu Reeves", "movie": "The Devil's Advocate", "role": "Kevin Lomax"},
-		{"person": "Al Pacino", "movie": "The Devil's Advocate", "role": "John Milton"},
-
-		{"person": "Tom Cruise", "movie": "Top Gun", "role": "Maverick"},
-		{"person": "Tom Cruise", "movie": "Jerry Maguire", "role": "Jerry Maguire"},
-		{"person": "Tom Cruise", "movie": "A Few Good Men", "role": "Lt. Daniel Kaffee"},
-		{"person": "Jack Nicholson", "movie": "A Few Good Men", "role": "Col. Nathan R. Jessep"},
-
-		{"person": "Tom Hanks", "movie": "Forrest Gump", "role": "Forrest Gump"},
-		{"person": "Tom Hanks", "movie": "Cast Away", "role": "Chuck Noland"},
-
-		{"person": "Leonardo DiCaprio", "movie": "Inception", "role": "Dom Cobb"},
-		{"person": "Christian Bale", "movie": "The Dark Knight", "role": "Bruce Wayne"},
-		{"person": "Heath Ledger", "movie": "The Dark Knight", "role": "The Joker"},
-		{"person": "Leonardo DiCaprio", "movie": "Interstellar", "role": ""},
-		{"person": "Matthew McConaughey", "movie": "Interstellar", "role": "Cooper"},
-
-		{"person": "Brad Pitt", "movie": "Fight Club", "role": "Tyler Durden"},
-		{"person": "Edward Norton", "movie": "Fight Club", "role": "The Narrator"},
+	// DESIGNED relationships
+	designed := []map[string]any{
+		{"company": "NVIDIA", "chip": "H100"},
+		{"company": "NVIDIA", "chip": "A100"},
+		{"company": "NVIDIA", "chip": "H200"},
+		{"company": "NVIDIA", "chip": "B200"},
+		{"company": "AMD", "chip": "MI300X"},
+		{"company": "Intel", "chip": "Gaudi 3"},
+		{"company": "Google DeepMind", "chip": "TPU v5e"},
+		{"company": "AWS", "chip": "Trainium2"},
 	}
-	for _, a := range actedIn {
+	for _, d := range designed {
 		run(ctx, driver,
-			`MATCH (p:Person {name: $person})
-			 MATCH (m:Movie {title: $movie})
-			 CREATE (p)-[:ACTED_IN {role: $role}]->(m)`, a)
+			`MATCH (c:Company {name: $company})
+			 MATCH (ch:Chip {name: $chip})
+			 CREATE (c)-[:DESIGNED]->(ch)`, d)
 	}
-	slog.Info("Created ACTED_IN relationships", "count", len(actedIn))
+	slog.Info("Created DESIGNED relationships", "count", len(designed))
 
-	// DIRECTED relationships
-	directed := []map[string]any{
-		{"person": "Lana Wachowski", "movie": "The Matrix"},
-		{"person": "Lilly Wachowski", "movie": "The Matrix"},
-		{"person": "Lana Wachowski", "movie": "The Matrix Reloaded"},
-		{"person": "Lilly Wachowski", "movie": "The Matrix Reloaded"},
-		{"person": "Lana Wachowski", "movie": "The Matrix Revolutions"},
-		{"person": "Lilly Wachowski", "movie": "The Matrix Revolutions"},
-		{"person": "Chad Stahelski", "movie": "John Wick"},
-		{"person": "Jan de Bont", "movie": "Speed"},
-		{"person": "Taylor Hackford", "movie": "The Devil's Advocate"},
-		{"person": "Rob Reiner", "movie": "A Few Good Men"},
-		{"person": "Tony Scott", "movie": "Top Gun"},
-		{"person": "Cameron Crowe", "movie": "Jerry Maguire"},
-		{"person": "Robert Zemeckis", "movie": "Forrest Gump"},
-		{"person": "Robert Zemeckis", "movie": "Cast Away"},
-		{"person": "Christopher Nolan", "movie": "Inception"},
-		{"person": "Christopher Nolan", "movie": "The Dark Knight"},
-		{"person": "Christopher Nolan", "movie": "Interstellar"},
-		{"person": "David Fincher", "movie": "Fight Club"},
+	// MANUFACTURES relationships
+	manufactures := []map[string]any{
+		{"company": "TSMC", "chip": "H100"},
+		{"company": "TSMC", "chip": "A100"},
+		{"company": "TSMC", "chip": "H200"},
+		{"company": "TSMC", "chip": "B200"},
+		{"company": "TSMC", "chip": "MI300X"},
+		{"company": "TSMC", "chip": "Gaudi 3"},
+		{"company": "Samsung Foundry", "chip": "TPU v5e"},
+		{"company": "Samsung Foundry", "chip": "Trainium2"},
 	}
-	for _, d := range directed {
+	for _, m := range manufactures {
 		run(ctx, driver,
-			`MATCH (p:Person {name: $person})
-			 MATCH (m:Movie {title: $movie})
-			 CREATE (p)-[:DIRECTED]->(m)`, d)
+			`MATCH (c:Company {name: $company})
+			 MATCH (ch:Chip {name: $chip})
+			 CREATE (c)-[:MANUFACTURES]->(ch)`, m)
 	}
-	slog.Info("Created DIRECTED relationships", "count", len(directed))
+	slog.Info("Created MANUFACTURES relationships", "count", len(manufactures))
+
+	// SUPPLIES_EQUIPMENT_TO relationships
+	suppliesEquipment := []map[string]any{
+		{"supplier": "ASML", "recipient": "TSMC"},
+		{"supplier": "ASML", "recipient": "Samsung Foundry"},
+	}
+	for _, s := range suppliesEquipment {
+		run(ctx, driver,
+			`MATCH (s:Company {name: $supplier})
+			 MATCH (r:Company {name: $recipient})
+			 CREATE (s)-[:SUPPLIES_EQUIPMENT_TO]->(r)`, s)
+	}
+	slog.Info("Created SUPPLIES_EQUIPMENT_TO relationships", "count", len(suppliesEquipment))
+
+	// PROVIDES_CLOUD_FOR relationships
+	providesCloud := []map[string]any{
+		{"provider": "AWS", "client": "Anthropic"},
+		{"provider": "Microsoft Azure", "client": "OpenAI"},
+		{"provider": "Google Cloud", "client": "Google DeepMind"},
+		{"provider": "Oracle Cloud", "client": "OpenAI"},
+	}
+	for _, p := range providesCloud {
+		run(ctx, driver,
+			`MATCH (p:Company {name: $provider})
+			 MATCH (c:Company {name: $client})
+			 CREATE (p)-[:PROVIDES_CLOUD_FOR]->(c)`, p)
+	}
+	slog.Info("Created PROVIDES_CLOUD_FOR relationships", "count", len(providesCloud))
+
+	// USES relationships
+	uses := []map[string]any{
+		{"company": "OpenAI", "chip": "H100"},
+		{"company": "OpenAI", "chip": "A100"},
+		{"company": "Anthropic", "chip": "H100"},
+		{"company": "Anthropic", "chip": "H200"},
+		{"company": "Google DeepMind", "chip": "TPU v5e"},
+		{"company": "Meta AI", "chip": "H100"},
+		{"company": "Meta AI", "chip": "A100"},
+		{"company": "Moonshot AI", "chip": "H100"},
+		{"company": "z.ai", "chip": "H100"},
+	}
+	for _, u := range uses {
+		run(ctx, driver,
+			`MATCH (c:Company {name: $company})
+			 MATCH (ch:Chip {name: $chip})
+			 CREATE (c)-[:USES]->(ch)`, u)
+	}
+	slog.Info("Created USES relationships", "count", len(uses))
 
 	slog.Info("Seed complete!")
 }
