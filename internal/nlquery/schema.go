@@ -1,9 +1,11 @@
 package nlquery
 
 import (
-	"fmt"
+	"bytes"
+	_ "embed"
 	"sort"
 	"strings"
+	"text/template"
 )
 
 type GraphSchema struct {
@@ -28,32 +30,37 @@ func DefaultGraphSchema() GraphSchema {
 	}
 }
 
+//go:embed schema_prompt.tmpl
+var schemaPromptRaw string
+
+var schemaPromptTmpl = template.Must(template.New("schema").Funcs(template.FuncMap{
+	"join": strings.Join,
+}).Parse(schemaPromptRaw))
+
+type labelProps struct {
+	Label string
+	Props []string
+}
+
 func (s GraphSchema) Prompt() string {
-	var b strings.Builder
-
-	b.WriteString("Graph schema:\n")
-	b.WriteString("- Node labels:\n")
-	for _, label := range s.sortedLabels() {
-		b.WriteString(fmt.Sprintf("  - %s\n", label))
-	}
-
-	b.WriteString("- Relationship types:\n")
-	for _, rel := range s.sortedRelationshipTypes() {
-		b.WriteString(fmt.Sprintf("  - %s\n", rel))
-	}
-
-	b.WriteString("- Allowed properties by label:\n")
+	propLabels := make([]labelProps, 0, len(s.Properties))
 	for _, label := range s.sortedPropertyLabels() {
-		b.WriteString(fmt.Sprintf("  - %s: %s\n", label, strings.Join(s.Properties[label], ", ")))
+		propLabels = append(propLabels, labelProps{Label: label, Props: s.Properties[label]})
 	}
 
-	b.WriteString("- Domain notes:\n")
-	b.WriteString("  - Companies represent chip designers, manufacturers, equipment suppliers, AI labs, and cloud providers.\n")
-	b.WriteString("  - The graph currently models company-to-company relationships only.\n")
-	b.WriteString("  - When querying relationships for a specific entity, use undirected patterns like (a)-[r]-(b) to capture both incoming and outgoing relationships in a single query.\n")
-	b.WriteString("  - Use only the labels, relationships, and properties listed here.\n")
+	data := struct {
+		Labels            []string
+		RelationshipTypes []string
+		PropertyLabels    []labelProps
+	}{
+		Labels:            s.sortedLabels(),
+		RelationshipTypes: s.sortedRelationshipTypes(),
+		PropertyLabels:    propLabels,
+	}
 
-	return b.String()
+	var buf bytes.Buffer
+	schemaPromptTmpl.Execute(&buf, data)
+	return buf.String()
 }
 
 func (s GraphSchema) allowedLabels() map[string]struct{} {

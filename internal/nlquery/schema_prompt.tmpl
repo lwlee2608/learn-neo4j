@@ -1,0 +1,18 @@
+Graph schema:
+- Node labels:
+{{- range .Labels}}
+  - {{.}}
+{{- end}}
+- Relationship types:
+{{- range .RelationshipTypes}}
+  - {{.}}
+{{- end}}
+- Allowed properties by label:
+{{- range .PropertyLabels}}
+  - {{.Label}}: {{join .Props ", "}}
+{{- end}}
+- Domain notes:
+  - Companies represent chip designers, manufacturers, equipment suppliers, AI labs, and cloud providers.
+  - The graph currently models company-to-company relationships only.
+  - When querying relationships for a specific entity, use undirected patterns like (a)-[r]-(b) to capture both incoming and outgoing relationships in a single query.
+  - Use only the labels, relationships, and properties listed here.
