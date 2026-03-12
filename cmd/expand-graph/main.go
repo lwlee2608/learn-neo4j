@@ -19,7 +19,7 @@ func main() {
 	InitConfig()
 
 	keywordFlag := flag.String("keyword", "", "keyword or company name to expand around")
-	modelFlag := flag.String("model", envOrDefault("OPENROUTER_MODEL", "openai/gpt-4.1-mini"), "OpenRouter model to use")
+	modelFlag := flag.String("model", envOrDefault("OPENROUTER_MODEL", "anthropic/claude-sonnet-4-6"), "OpenRouter model to use")
 	temperatureFlag := flag.Float64("temperature", 0.2, "sampling temperature")
 	maxTokensFlag := flag.Int("max-tokens", 1200, "maximum completion tokens")
 	flag.Parse()
