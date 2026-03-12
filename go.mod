@@ -10,6 +10,7 @@ require (
 	github.com/lwlee2608/adder v0.2.0
 	github.com/neo4j/neo4j-go-driver/v5 v5.28.4
 	github.com/openai/openai-go/v3 v3.26.0
+	github.com/pkg/errors v0.9.1
 )
 
 require (
