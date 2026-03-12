@@ -21,7 +21,6 @@ func main() {
 	modelFlag := flag.String("model", envOrDefault("OPENROUTER_MODEL", "openai/gpt-4.1-mini"), "OpenRouter model to use")
 	temperatureFlag := flag.Float64("temperature", 0, "sampling temperature")
 	maxTokensFlag := flag.Int("max-tokens", 400, "maximum completion tokens")
-	executeFlag := flag.Bool("execute", false, "execute the validated query against Neo4j")
 	printConfigFlag := flag.Bool("print-config", false, "print resolved config before running")
 	flag.Parse()
 
@@ -37,37 +36,33 @@ func main() {
 		printConfig()
 	}
 
+	client, err := n.NewClient(config.Neo4j)
+	if err != nil {
+		log.Fatalf("connect to neo4j: %v", err)
+	}
+	defer client.Close(context.Background())
+
 	completion := llm.NewOpenAIService(config.OpenRouter.ApiKey, config.OpenRouter.BaseUrl)
-	translator := nlquery.NewTranslator(completion, nlquery.TranslatorConfig{
+	executor := nlquery.NewNeo4jExecutor(client, nlquery.DefaultGraphSchema())
+	queryAgent := nlquery.NewQueryAgent(completion, executor, nlquery.AgentConfig{
 		Model:       *modelFlag,
 		Temperature: *temperatureFlag,
 		MaxTokens:   *maxTokensFlag,
 	})
 
 	ctx := context.Background()
-	plan, err := translator.Translate(ctx, question)
+	answer, err := queryAgent.Ask(ctx, question)
 	if err != nil {
-		log.Fatalf("translate question: %v", err)
+		log.Fatalf("ask question: %v", err)
 	}
 
-	printJSON("plan", plan)
-
-	if !*executeFlag {
-		return
+	if answer.Plan != nil {
+		printJSON("plan", answer.Plan)
 	}
-
-	client, err := n.NewClient(config.Neo4j)
-	if err != nil {
-		log.Fatalf("connect to neo4j: %v", err)
+	if answer.Result != nil {
+		printJSON("result", answer.Result)
 	}
-	defer client.Close(ctx)
-
-	result, err := nlquery.ExecuteReadOnly(ctx, client, plan)
-	if err != nil {
-		log.Fatalf("execute plan: %v", err)
-	}
-
-	printJSON("result", result)
+	printText("answer", answer.FinalResponse)
 }
 
 func envOrDefault(key, fallback string) string {
@@ -84,4 +79,8 @@ func printJSON(label string, value any) {
 	}
 
 	fmt.Printf("%s:\n%s\n", strings.ToUpper(label), data)
+}
+
+func printText(label string, value string) {
+	fmt.Printf("%s:\n%s\n", strings.ToUpper(label), value)
 }

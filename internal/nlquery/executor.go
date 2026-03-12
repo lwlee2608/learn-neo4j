@@ -8,8 +8,32 @@ import (
 	neo4jdb "github.com/neo4j/neo4j-go-driver/v5/neo4j"
 )
 
-func ExecuteReadOnly(ctx context.Context, client *n.Client, plan *Plan) (*QueryResult, error) {
-	if err := ValidatePlan(plan, DefaultGraphSchema()); err != nil {
+type Neo4jExecutor struct {
+	client *n.Client
+	schema GraphSchema
+}
+
+func NewNeo4jExecutor(client *n.Client, schema GraphSchema) *Neo4jExecutor {
+	if schema.Labels == nil {
+		schema = DefaultGraphSchema()
+	}
+
+	return &Neo4jExecutor{
+		client: client,
+		schema: schema,
+	}
+}
+
+func (e *Neo4jExecutor) ExecuteReadOnly(ctx context.Context, plan *Plan) (*QueryResult, error) {
+	return ExecuteReadOnly(ctx, e.client, plan, e.schema)
+}
+
+func ExecuteReadOnly(ctx context.Context, client *n.Client, plan *Plan, schema GraphSchema) (*QueryResult, error) {
+	if schema.Labels == nil {
+		schema = DefaultGraphSchema()
+	}
+
+	if err := ValidatePlan(plan, schema); err != nil {
 		return nil, err
 	}
 

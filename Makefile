@@ -19,7 +19,7 @@ build-ask:
 run:
 	$(GO) run $(LDFLAGS) cmd/$(APP)/*.go
 run-ask:
-	$(GO) run cmd/$(ASK_CYPHER_APP)/*.go
+	$(GO) run cmd/$(ASK_CYPHER_APP)/*.go $(ARGS)
 seed:
 	$(GO) run cmd/seed-data/main.go
 test:
