@@ -20,7 +20,7 @@ func main() {
 	questionFlag := flag.String("question", "", "natural language question to translate")
 	modelFlag := flag.String("model", envOrDefault("OPENROUTER_MODEL", "anthropic/claude-sonnet-4-6"), "OpenRouter model to use")
 	temperatureFlag := flag.Float64("temperature", 0, "sampling temperature")
-	maxTokensFlag := flag.Int("max-tokens", 400, "maximum completion tokens")
+	maxTokensFlag := flag.Int("max-tokens", 4096, "maximum completion tokens")
 	printConfigFlag := flag.Bool("print-config", false, "print resolved config before running")
 	flag.Parse()
 
