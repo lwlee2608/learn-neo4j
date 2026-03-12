@@ -30,7 +30,7 @@ func DefaultGraphSchema() GraphSchema {
 	}
 }
 
-//go:embed schema_prompt.tmpl
+//go:embed templates/schema_prompt.tmpl
 var schemaPromptRaw string
 
 var schemaPromptTmpl = template.Must(template.New("schema").Funcs(template.FuncMap{

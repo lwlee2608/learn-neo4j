@@ -1,13 +1,21 @@
 package nlquery
 
 import (
+	"bytes"
 	"context"
+	_ "embed"
 	"fmt"
 	"strings"
+	"text/template"
 
 	llm "github.com/lwlee2608/learn-neo4j/pkg/ai"
 	"github.com/openai/openai-go/v3"
 )
+
+//go:embed templates/agent_system_prompt.tmpl
+var agentSystemPromptRaw string
+
+var agentSystemPromptTmpl = template.Must(template.New("agent_system").Parse(agentSystemPromptRaw))
 
 const defaultAgentMaxSteps = 4
 
@@ -89,21 +97,7 @@ func (a *QueryAgent) Ask(ctx context.Context, question string) (*Answer, error) 
 }
 
 func (a *QueryAgent) systemPrompt() string {
-	return fmt.Sprintf(strings.TrimSpace(`You answer questions about a Neo4j graph.
-
-You have one tool available:
-- use it to create a read-only Cypher plan and execute it against Neo4j
-
-Rules:
-- Always use the tool before giving a final answer.
-- The tool input must include a Cypher plan with query, params, intent, explanation, and read_only.
-- The query must be exactly one read-only Cypher statement.
-- Use only MATCH, OPTIONAL MATCH, WHERE, WITH, RETURN, ORDER BY, LIMIT, and aggregation when helpful.
-- Do not use CREATE, MERGE, DELETE, DETACH, SET, REMOVE, DROP, CALL, APOC, or multi-statement Cypher.
-- Use only the provided schema.
-- Use parameters for all user-provided values; do not place string literals in the query.
-- After the tool returns, answer in natural language using the tool result.
-- If no rows are returned, say so clearly.
-
-%s`), a.schema.Prompt())
+	var buf bytes.Buffer
+	agentSystemPromptTmpl.Execute(&buf, struct{ Schema string }{Schema: a.schema.Prompt()})
+	return strings.TrimSpace(buf.String())
 }

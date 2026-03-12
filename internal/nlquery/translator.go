@@ -2,6 +2,7 @@ package nlquery
 
 import (
 	"context"
+	_ "embed"
 	"encoding/json"
 	"fmt"
 	"strings"
@@ -9,6 +10,9 @@ import (
 	llm "github.com/lwlee2608/learn-neo4j/pkg/ai"
 	"github.com/openai/openai-go/v3"
 )
+
+//go:embed templates/translator_system_prompt.tmpl
+var translatorSystemPrompt string
 
 const defaultMaxTokens = 400
 
@@ -83,33 +87,7 @@ func (t *Translator) Translate(ctx context.Context, question string) (*Plan, err
 }
 
 func (t *Translator) systemPrompt() string {
-	return strings.TrimSpace(`You translate natural language questions into read-only Neo4j Cypher.
-
-Return JSON only with this shape:
-{
-  "query": "string",
-  "params": {"key": "value"},
-  "intent": "string",
-  "explanation": "string",
-  "read_only": true
-}
-
-Rules:
-- Generate exactly one read-only Cypher statement.
-- Use MATCH, OPTIONAL MATCH, WHERE, WITH, RETURN, ORDER BY, LIMIT, and aggregation when helpful.
-- Do not use CREATE, MERGE, DELETE, DETACH, SET, REMOVE, DROP, CALL, APOC, or multi-statement Cypher.
-- Do not invent labels, relationship types, or properties outside the provided schema.
-- Use query parameters for all user-provided values.
-- Do not put string literals directly into the query.
-- Always set read_only to true.
-- If the question cannot be answered with the schema, return a safe fallback query:
-  {
-    "query": "MATCH (c:Company) RETURN c.name AS message LIMIT 0",
-    "params": {},
-    "intent": "unsupported",
-    "explanation": "The question cannot be answered with the available schema.",
-    "read_only": true
-  }`)
+	return strings.TrimSpace(translatorSystemPrompt)
 }
 
 func (t *Translator) userPrompt(question string) string {
