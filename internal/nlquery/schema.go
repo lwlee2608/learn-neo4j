@@ -50,6 +50,7 @@ func (s GraphSchema) Prompt() string {
 	b.WriteString("- Domain notes:\n")
 	b.WriteString("  - Companies represent chip designers, manufacturers, equipment suppliers, AI labs, and cloud providers.\n")
 	b.WriteString("  - The graph currently models company-to-company relationships only.\n")
+	b.WriteString("  - When querying relationships for a specific entity, always check BOTH directions (incoming and outgoing) to get the full picture.\n")
 	b.WriteString("  - Use only the labels, relationships, and properties listed here.\n")
 
 	return b.String()
