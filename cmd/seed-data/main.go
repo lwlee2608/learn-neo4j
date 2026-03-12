@@ -54,6 +54,7 @@ func main() {
 		{"name": "Microsoft Azure", "type": "cloud_provider", "founded": 2010, "hq": "Redmond"},
 		{"name": "Google Cloud", "type": "cloud_provider", "founded": 2008, "hq": "Sunnyvale"},
 		{"name": "Oracle Cloud", "type": "cloud_provider", "founded": 2016, "hq": "Austin"},
+		{"name": "CoreWeave", "type": "cloud_provider", "founded": 2017, "hq": "Roseland"},
 	}
 	for _, c := range companies {
 		run(ctx, driver, "CREATE (:Company {name: $name, type: $type, founded: $founded, hq: $hq})", c)
@@ -110,9 +111,11 @@ func main() {
 	// PROVIDES_CLOUD_FOR relationships
 	providesCloud := []map[string]any{
 		{"provider": "AWS", "client": "Anthropic"},
+		{"provider": "CoreWeave", "client": "OpenAI"},
 		{"provider": "Microsoft Azure", "client": "OpenAI"},
 		{"provider": "Google Cloud", "client": "Google DeepMind"},
 		{"provider": "Oracle Cloud", "client": "OpenAI"},
+		{"provider": "CoreWeave", "client": "Meta AI"},
 	}
 	for _, p := range providesCloud {
 		run(ctx, driver,
@@ -131,9 +134,13 @@ func main() {
 		{"company": "AWS", "competitor": "Microsoft Azure"},
 		{"company": "AWS", "competitor": "Google Cloud"},
 		{"company": "AWS", "competitor": "Oracle Cloud"},
+		{"company": "AWS", "competitor": "CoreWeave"},
 		{"company": "Microsoft Azure", "competitor": "Google Cloud"},
 		{"company": "Microsoft Azure", "competitor": "Oracle Cloud"},
+		{"company": "Microsoft Azure", "competitor": "CoreWeave"},
 		{"company": "Google Cloud", "competitor": "Oracle Cloud"},
+		{"company": "Google Cloud", "competitor": "CoreWeave"},
+		{"company": "Oracle Cloud", "competitor": "CoreWeave"},
 		{"company": "OpenAI", "competitor": "Anthropic"},
 		{"company": "OpenAI", "competitor": "Google DeepMind"},
 		{"company": "OpenAI", "competitor": "Meta AI"},
