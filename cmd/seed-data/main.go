@@ -34,7 +34,6 @@ func main() {
 
 	// Create indexes
 	run(ctx, driver, "CREATE INDEX IF NOT EXISTS FOR (c:Company) ON (c.name)", nil)
-	run(ctx, driver, "CREATE INDEX IF NOT EXISTS FOR (ch:Chip) ON (ch.name)", nil)
 	slog.Info("Created indexes")
 
 	// Companies
@@ -61,60 +60,6 @@ func main() {
 	}
 	slog.Info("Created companies", "count", len(companies))
 
-	// Chips
-	chips := []map[string]any{
-		{"name": "H100", "architecture": "Hopper", "year": 2022, "transistor_nm": 4},
-		{"name": "A100", "architecture": "Ampere", "year": 2020, "transistor_nm": 7},
-		{"name": "H200", "architecture": "Hopper", "year": 2024, "transistor_nm": 4},
-		{"name": "B200", "architecture": "Blackwell", "year": 2024, "transistor_nm": 4},
-		{"name": "MI300X", "architecture": "CDNA 3", "year": 2023, "transistor_nm": 5},
-		{"name": "Gaudi 3", "architecture": "Gaudi", "year": 2024, "transistor_nm": 5},
-		{"name": "TPU v5e", "architecture": "TPU", "year": 2023, "transistor_nm": 7},
-		{"name": "Trainium2", "architecture": "Trainium", "year": 2024, "transistor_nm": 3},
-	}
-	for _, ch := range chips {
-		run(ctx, driver, "CREATE (:Chip {name: $name, architecture: $architecture, year: $year, transistor_nm: $transistor_nm})", ch)
-	}
-	slog.Info("Created chips", "count", len(chips))
-
-	// DESIGNED relationships
-	designed := []map[string]any{
-		{"company": "NVIDIA", "chip": "H100"},
-		{"company": "NVIDIA", "chip": "A100"},
-		{"company": "NVIDIA", "chip": "H200"},
-		{"company": "NVIDIA", "chip": "B200"},
-		{"company": "AMD", "chip": "MI300X"},
-		{"company": "Intel", "chip": "Gaudi 3"},
-		{"company": "Google DeepMind", "chip": "TPU v5e"},
-		{"company": "AWS", "chip": "Trainium2"},
-	}
-	for _, d := range designed {
-		run(ctx, driver,
-			`MATCH (c:Company {name: $company})
-			 MATCH (ch:Chip {name: $chip})
-			 CREATE (c)-[:DESIGNED]->(ch)`, d)
-	}
-	slog.Info("Created DESIGNED relationships", "count", len(designed))
-
-	// MANUFACTURES relationships
-	manufactures := []map[string]any{
-		{"company": "TSMC", "chip": "H100"},
-		{"company": "TSMC", "chip": "A100"},
-		{"company": "TSMC", "chip": "H200"},
-		{"company": "TSMC", "chip": "B200"},
-		{"company": "TSMC", "chip": "MI300X"},
-		{"company": "TSMC", "chip": "Gaudi 3"},
-		{"company": "Samsung Foundry", "chip": "TPU v5e"},
-		{"company": "Samsung Foundry", "chip": "Trainium2"},
-	}
-	for _, m := range manufactures {
-		run(ctx, driver,
-			`MATCH (c:Company {name: $company})
-			 MATCH (ch:Chip {name: $chip})
-			 CREATE (c)-[:MANUFACTURES]->(ch)`, m)
-	}
-	slog.Info("Created MANUFACTURES relationships", "count", len(manufactures))
-
 	// SUPPLIES_EQUIPMENT_TO relationships
 	suppliesEquipment := []map[string]any{
 		{"supplier": "ASML", "recipient": "TSMC"},
@@ -127,6 +72,40 @@ func main() {
 			 CREATE (s)-[:SUPPLIES_EQUIPMENT_TO]->(r)`, s)
 	}
 	slog.Info("Created SUPPLIES_EQUIPMENT_TO relationships", "count", len(suppliesEquipment))
+
+	// MANUFACTURES_FOR relationships
+	manufacturesFor := []map[string]any{
+		{"manufacturer": "TSMC", "client": "NVIDIA"},
+		{"manufacturer": "TSMC", "client": "AMD"},
+		{"manufacturer": "TSMC", "client": "Intel"},
+		{"manufacturer": "Samsung Foundry", "client": "Google DeepMind"},
+		{"manufacturer": "Samsung Foundry", "client": "AWS"},
+	}
+	for _, m := range manufacturesFor {
+		run(ctx, driver,
+			`MATCH (m:Company {name: $manufacturer})
+			 MATCH (c:Company {name: $client})
+			 CREATE (m)-[:MANUFACTURES_FOR]->(c)`, m)
+	}
+	slog.Info("Created MANUFACTURES_FOR relationships", "count", len(manufacturesFor))
+
+	// SUPPLIES_CHIPS_TO relationships
+	suppliesChips := []map[string]any{
+		{"supplier": "NVIDIA", "client": "OpenAI"},
+		{"supplier": "NVIDIA", "client": "Anthropic"},
+		{"supplier": "NVIDIA", "client": "Meta AI"},
+		{"supplier": "NVIDIA", "client": "Moonshot AI"},
+		{"supplier": "NVIDIA", "client": "z.ai"},
+		{"supplier": "AMD", "client": "Meta AI"},
+		{"supplier": "Intel", "client": "Google DeepMind"},
+	}
+	for _, s := range suppliesChips {
+		run(ctx, driver,
+			`MATCH (s:Company {name: $supplier})
+			 MATCH (c:Company {name: $client})
+			 CREATE (s)-[:SUPPLIES_CHIPS_TO]->(c)`, s)
+	}
+	slog.Info("Created SUPPLIES_CHIPS_TO relationships", "count", len(suppliesChips))
 
 	// PROVIDES_CLOUD_FOR relationships
 	providesCloud := []map[string]any{
@@ -143,25 +122,33 @@ func main() {
 	}
 	slog.Info("Created PROVIDES_CLOUD_FOR relationships", "count", len(providesCloud))
 
-	// USES relationships
-	uses := []map[string]any{
-		{"company": "OpenAI", "chip": "H100"},
-		{"company": "OpenAI", "chip": "A100"},
-		{"company": "Anthropic", "chip": "H100"},
-		{"company": "Anthropic", "chip": "H200"},
-		{"company": "Google DeepMind", "chip": "TPU v5e"},
-		{"company": "Meta AI", "chip": "H100"},
-		{"company": "Meta AI", "chip": "A100"},
-		{"company": "Moonshot AI", "chip": "H100"},
-		{"company": "z.ai", "chip": "H100"},
+	// COMPETES_WITH relationships
+	competesWith := []map[string]any{
+		{"company": "NVIDIA", "competitor": "AMD"},
+		{"company": "NVIDIA", "competitor": "Intel"},
+		{"company": "AMD", "competitor": "Intel"},
+		{"company": "TSMC", "competitor": "Samsung Foundry"},
+		{"company": "AWS", "competitor": "Microsoft Azure"},
+		{"company": "AWS", "competitor": "Google Cloud"},
+		{"company": "AWS", "competitor": "Oracle Cloud"},
+		{"company": "Microsoft Azure", "competitor": "Google Cloud"},
+		{"company": "Microsoft Azure", "competitor": "Oracle Cloud"},
+		{"company": "Google Cloud", "competitor": "Oracle Cloud"},
+		{"company": "OpenAI", "competitor": "Anthropic"},
+		{"company": "OpenAI", "competitor": "Google DeepMind"},
+		{"company": "OpenAI", "competitor": "Meta AI"},
+		{"company": "Anthropic", "competitor": "Google DeepMind"},
+		{"company": "Anthropic", "competitor": "Meta AI"},
+		{"company": "Google DeepMind", "competitor": "Meta AI"},
+		{"company": "Moonshot AI", "competitor": "z.ai"},
 	}
-	for _, u := range uses {
+	for _, c := range competesWith {
 		run(ctx, driver,
-			`MATCH (c:Company {name: $company})
-			 MATCH (ch:Chip {name: $chip})
-			 CREATE (c)-[:USES]->(ch)`, u)
+			`MATCH (a:Company {name: $company})
+			 MATCH (b:Company {name: $competitor})
+			 CREATE (a)-[:COMPETES_WITH]->(b)`, c)
 	}
-	slog.Info("Created USES relationships", "count", len(uses))
+	slog.Info("Created COMPETES_WITH relationships", "count", len(competesWith))
 
 	slog.Info("Seed complete!")
 }

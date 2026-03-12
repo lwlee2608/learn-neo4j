@@ -30,17 +30,13 @@ func SetupRoute(engine *gin.Engine, srvs *Services) {
 		apis.GET("/companies", scHandler.ListCompanies)
 		apis.GET("/companies/:name", scHandler.GetCompany)
 
-		apis.POST("/chips", scHandler.CreateChip)
-		apis.GET("/chips", scHandler.ListChips)
-		apis.GET("/chips/:name", scHandler.GetChip)
-
 		rels := apis.Group("/relationships")
 		{
-			rels.POST("/designed", scHandler.CreateDesigned)
-			rels.POST("/manufactures", scHandler.CreateManufactures)
 			rels.POST("/supplies-equipment-to", scHandler.CreateSuppliesEquipmentTo)
+			rels.POST("/manufactures-for", scHandler.CreateManufacturesFor)
+			rels.POST("/supplies-chips-to", scHandler.CreateSuppliesChipsTo)
 			rels.POST("/provides-cloud-for", scHandler.CreateProvidesCloudFor)
-			rels.POST("/uses", scHandler.CreateUses)
+			rels.POST("/competes-with", scHandler.CreateCompetesWith)
 		}
 	}
 }

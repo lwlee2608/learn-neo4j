@@ -48,64 +48,6 @@ func (h *SupplyChainHandler) GetCompany(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, company)
 }
 
-func (h *SupplyChainHandler) CreateChip(ctx *gin.Context) {
-	var chip domain.Chip
-	if err := ctx.ShouldBindJSON(&chip); err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-		return
-	}
-	if err := h.svc.CreateChip(ctx.Request.Context(), chip); err != nil {
-		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		return
-	}
-	ctx.JSON(http.StatusCreated, chip)
-}
-
-func (h *SupplyChainHandler) ListChips(ctx *gin.Context) {
-	chips, err := h.svc.ListChips(ctx.Request.Context())
-	if err != nil {
-		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		return
-	}
-	ctx.JSON(http.StatusOK, chips)
-}
-
-func (h *SupplyChainHandler) GetChip(ctx *gin.Context) {
-	name := ctx.Param("name")
-	chip, err := h.svc.GetChip(ctx.Request.Context(), name)
-	if err != nil {
-		ctx.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
-		return
-	}
-	ctx.JSON(http.StatusOK, chip)
-}
-
-func (h *SupplyChainHandler) CreateDesigned(ctx *gin.Context) {
-	var rel domain.Designed
-	if err := ctx.ShouldBindJSON(&rel); err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-		return
-	}
-	if err := h.svc.CreateDesigned(ctx.Request.Context(), rel); err != nil {
-		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		return
-	}
-	ctx.JSON(http.StatusCreated, rel)
-}
-
-func (h *SupplyChainHandler) CreateManufactures(ctx *gin.Context) {
-	var rel domain.Manufactures
-	if err := ctx.ShouldBindJSON(&rel); err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-		return
-	}
-	if err := h.svc.CreateManufactures(ctx.Request.Context(), rel); err != nil {
-		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		return
-	}
-	ctx.JSON(http.StatusCreated, rel)
-}
-
 func (h *SupplyChainHandler) CreateSuppliesEquipmentTo(ctx *gin.Context) {
 	var rel domain.SuppliesEquipmentTo
 	if err := ctx.ShouldBindJSON(&rel); err != nil {
@@ -119,6 +61,45 @@ func (h *SupplyChainHandler) CreateSuppliesEquipmentTo(ctx *gin.Context) {
 	ctx.JSON(http.StatusCreated, rel)
 }
 
+func (h *SupplyChainHandler) CreateManufacturesFor(ctx *gin.Context) {
+	var rel domain.ManufacturesFor
+	if err := ctx.ShouldBindJSON(&rel); err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	if err := h.svc.CreateManufacturesFor(ctx.Request.Context(), rel); err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	ctx.JSON(http.StatusCreated, rel)
+}
+
+func (h *SupplyChainHandler) CreateSuppliesChipsTo(ctx *gin.Context) {
+	var rel domain.SuppliesChipsTo
+	if err := ctx.ShouldBindJSON(&rel); err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	if err := h.svc.CreateSuppliesChipsTo(ctx.Request.Context(), rel); err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	ctx.JSON(http.StatusCreated, rel)
+}
+
+func (h *SupplyChainHandler) CreateCompetesWith(ctx *gin.Context) {
+	var rel domain.CompetesWith
+	if err := ctx.ShouldBindJSON(&rel); err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	if err := h.svc.CreateCompetesWith(ctx.Request.Context(), rel); err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	ctx.JSON(http.StatusCreated, rel)
+}
+
 func (h *SupplyChainHandler) CreateProvidesCloudFor(ctx *gin.Context) {
 	var rel domain.ProvidesCloudFor
 	if err := ctx.ShouldBindJSON(&rel); err != nil {
@@ -126,19 +107,6 @@ func (h *SupplyChainHandler) CreateProvidesCloudFor(ctx *gin.Context) {
 		return
 	}
 	if err := h.svc.CreateProvidesCloudFor(ctx.Request.Context(), rel); err != nil {
-		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		return
-	}
-	ctx.JSON(http.StatusCreated, rel)
-}
-
-func (h *SupplyChainHandler) CreateUses(ctx *gin.Context) {
-	var rel domain.Uses
-	if err := ctx.ShouldBindJSON(&rel); err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-		return
-	}
-	if err := h.svc.CreateUses(ctx.Request.Context(), rel); err != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}

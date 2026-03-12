@@ -7,26 +7,19 @@ type Company struct {
 	HQ      string `json:"hq"`
 }
 
-type Chip struct {
-	Name         string `json:"name"`
-	Architecture string `json:"architecture"`
-	Year         int    `json:"year"`
-	TransistorNm int   `json:"transistor_nm"`
-}
-
-type Designed struct {
-	CompanyName string `json:"company_name"`
-	ChipName    string `json:"chip_name"`
-}
-
-type Manufactures struct {
-	CompanyName string `json:"company_name"`
-	ChipName    string `json:"chip_name"`
-}
-
 type SuppliesEquipmentTo struct {
 	SupplierName  string `json:"supplier_name"`
 	RecipientName string `json:"recipient_name"`
+}
+
+type ManufacturesFor struct {
+	ManufacturerName string `json:"manufacturer_name"`
+	ClientName       string `json:"client_name"`
+}
+
+type SuppliesChipsTo struct {
+	SupplierName string `json:"supplier_name"`
+	ClientName   string `json:"client_name"`
 }
 
 type ProvidesCloudFor struct {
@@ -34,23 +27,16 @@ type ProvidesCloudFor struct {
 	ClientName   string `json:"client_name"`
 }
 
-type Uses struct {
-	CompanyName string `json:"company_name"`
-	ChipName    string `json:"chip_name"`
+type CompetesWith struct {
+	CompanyName    string `json:"company_name"`
+	CompetitorName string `json:"competitor_name"`
 }
 
 type CompanyWithRelations struct {
-	Company           Company  `json:"company"`
-	ChipsDesigned     []string `json:"chips_designed"`
-	ChipsManufactured []string `json:"chips_manufactured"`
-	EquipmentClients  []string `json:"equipment_clients"`
-	CloudClients      []string `json:"cloud_clients"`
-	ChipsUsed         []string `json:"chips_used"`
-}
-
-type ChipWithRelations struct {
-	Chip          Chip     `json:"chip"`
-	Designers     []string `json:"designers"`
-	Manufacturers []string `json:"manufacturers"`
-	Users         []string `json:"users"`
+	Company            Company  `json:"company"`
+	EquipmentClients   []string `json:"equipment_clients"`
+	ManufacturingFor   []string `json:"manufacturing_for"`
+	ChipSuppliedTo     []string `json:"chip_supplied_to"`
+	CloudClients       []string `json:"cloud_clients"`
+	Competitors        []string `json:"competitors"`
 }

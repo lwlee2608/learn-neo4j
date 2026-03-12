@@ -62,18 +62,18 @@ func (r *SupplyChainRepository) ListCompanies(ctx context.Context) ([]domain.Com
 func (r *SupplyChainRepository) GetCompany(ctx context.Context, name string) (*domain.CompanyWithRelations, error) {
 	result, err := neo4j.ExecuteQuery(ctx, r.client.Driver,
 		`MATCH (c:Company {name: $name})
-		 OPTIONAL MATCH (c)-[:DESIGNED]->(ch1:Chip)
-		 WITH c, collect(DISTINCT ch1.name) AS chipsDesigned
-		 OPTIONAL MATCH (c)-[:MANUFACTURES]->(ch2:Chip)
-		 WITH c, chipsDesigned, collect(DISTINCT ch2.name) AS chipsManufactured
-		 OPTIONAL MATCH (c)-[:SUPPLIES_EQUIPMENT_TO]->(r:Company)
-		 WITH c, chipsDesigned, chipsManufactured, collect(DISTINCT r.name) AS equipmentClients
+		 OPTIONAL MATCH (c)-[:SUPPLIES_EQUIPMENT_TO]->(eq:Company)
+		 WITH c, collect(DISTINCT eq.name) AS equipmentClients
+		 OPTIONAL MATCH (c)-[:MANUFACTURES_FOR]->(mf:Company)
+		 WITH c, equipmentClients, collect(DISTINCT mf.name) AS manufacturingFor
+		 OPTIONAL MATCH (c)-[:SUPPLIES_CHIPS_TO]->(sc:Company)
+		 WITH c, equipmentClients, manufacturingFor, collect(DISTINCT sc.name) AS chipSuppliedTo
 		 OPTIONAL MATCH (c)-[:PROVIDES_CLOUD_FOR]->(cl:Company)
-		 WITH c, chipsDesigned, chipsManufactured, equipmentClients, collect(DISTINCT cl.name) AS cloudClients
-		 OPTIONAL MATCH (c)-[:USES]->(ch3:Chip)
+		 WITH c, equipmentClients, manufacturingFor, chipSuppliedTo, collect(DISTINCT cl.name) AS cloudClients
+		 OPTIONAL MATCH (c)-[:COMPETES_WITH]-(comp:Company)
 		 RETURN c.name AS name, c.type AS type, c.founded AS founded, c.hq AS hq,
-		        chipsDesigned, chipsManufactured, equipmentClients, cloudClients,
-		        collect(DISTINCT ch3.name) AS chipsUsed`,
+		        equipmentClients, manufacturingFor, chipSuppliedTo, cloudClients,
+		        collect(DISTINCT comp.name) AS competitors`,
 		map[string]any{"name": name},
 		neo4j.EagerResultTransformer,
 		neo4j.ExecuteQueryWithDatabase("neo4j"),
@@ -99,125 +99,12 @@ func (r *SupplyChainRepository) GetCompany(ctx context.Context, name string) (*d
 			Founded: intOrZero(founded),
 			HQ:      stringOrEmpty(hq),
 		},
-		ChipsDesigned:     toStringSlice(record, "chipsDesigned"),
-		ChipsManufactured: toStringSlice(record, "chipsManufactured"),
-		EquipmentClients:  toStringSlice(record, "equipmentClients"),
-		CloudClients:      toStringSlice(record, "cloudClients"),
-		ChipsUsed:         toStringSlice(record, "chipsUsed"),
+		EquipmentClients: toStringSlice(record, "equipmentClients"),
+		ManufacturingFor: toStringSlice(record, "manufacturingFor"),
+		ChipSuppliedTo:   toStringSlice(record, "chipSuppliedTo"),
+		CloudClients:     toStringSlice(record, "cloudClients"),
+		Competitors:      toStringSlice(record, "competitors"),
 	}, nil
-}
-
-func (r *SupplyChainRepository) CreateChip(ctx context.Context, chip domain.Chip) error {
-	_, err := neo4j.ExecuteQuery(ctx, r.client.Driver,
-		"CREATE (ch:Chip {name: $name, architecture: $architecture, year: $year, transistor_nm: $transistor_nm})",
-		map[string]any{
-			"name":          chip.Name,
-			"architecture":  chip.Architecture,
-			"year":          chip.Year,
-			"transistor_nm": chip.TransistorNm,
-		},
-		neo4j.EagerResultTransformer,
-		neo4j.ExecuteQueryWithDatabase("neo4j"),
-	)
-	return err
-}
-
-func (r *SupplyChainRepository) ListChips(ctx context.Context) ([]domain.Chip, error) {
-	result, err := neo4j.ExecuteQuery(ctx, r.client.Driver,
-		"MATCH (ch:Chip) RETURN ch.name AS name, ch.architecture AS architecture, ch.year AS year, ch.transistor_nm AS transistor_nm ORDER BY ch.year",
-		nil,
-		neo4j.EagerResultTransformer,
-		neo4j.ExecuteQueryWithDatabase("neo4j"),
-	)
-	if err != nil {
-		return nil, err
-	}
-
-	var chips []domain.Chip
-	for _, record := range result.Records {
-		name, _ := record.Get("name")
-		arch, _ := record.Get("architecture")
-		year, _ := record.Get("year")
-		nm, _ := record.Get("transistor_nm")
-		chips = append(chips, domain.Chip{
-			Name:         name.(string),
-			Architecture: stringOrEmpty(arch),
-			Year:         intOrZero(year),
-			TransistorNm: intOrZero(nm),
-		})
-	}
-	return chips, nil
-}
-
-func (r *SupplyChainRepository) GetChip(ctx context.Context, name string) (*domain.ChipWithRelations, error) {
-	result, err := neo4j.ExecuteQuery(ctx, r.client.Driver,
-		`MATCH (ch:Chip {name: $name})
-		 OPTIONAL MATCH (d:Company)-[:DESIGNED]->(ch)
-		 WITH ch, collect(DISTINCT d.name) AS designers
-		 OPTIONAL MATCH (m:Company)-[:MANUFACTURES]->(ch)
-		 WITH ch, designers, collect(DISTINCT m.name) AS manufacturers
-		 OPTIONAL MATCH (u:Company)-[:USES]->(ch)
-		 RETURN ch.name AS name, ch.architecture AS architecture, ch.year AS year, ch.transistor_nm AS transistor_nm,
-		        designers, manufacturers, collect(DISTINCT u.name) AS users`,
-		map[string]any{"name": name},
-		neo4j.EagerResultTransformer,
-		neo4j.ExecuteQueryWithDatabase("neo4j"),
-	)
-	if err != nil {
-		return nil, err
-	}
-
-	if len(result.Records) == 0 {
-		return nil, fmt.Errorf("chip not found: %s", name)
-	}
-
-	record := result.Records[0]
-	cName, _ := record.Get("name")
-	arch, _ := record.Get("architecture")
-	year, _ := record.Get("year")
-	nm, _ := record.Get("transistor_nm")
-
-	return &domain.ChipWithRelations{
-		Chip: domain.Chip{
-			Name:         cName.(string),
-			Architecture: stringOrEmpty(arch),
-			Year:         intOrZero(year),
-			TransistorNm: intOrZero(nm),
-		},
-		Designers:     toStringSlice(record, "designers"),
-		Manufacturers: toStringSlice(record, "manufacturers"),
-		Users:         toStringSlice(record, "users"),
-	}, nil
-}
-
-func (r *SupplyChainRepository) CreateDesigned(ctx context.Context, rel domain.Designed) error {
-	_, err := neo4j.ExecuteQuery(ctx, r.client.Driver,
-		`MATCH (c:Company {name: $company_name})
-		 MATCH (ch:Chip {name: $chip_name})
-		 CREATE (c)-[:DESIGNED]->(ch)`,
-		map[string]any{
-			"company_name": rel.CompanyName,
-			"chip_name":    rel.ChipName,
-		},
-		neo4j.EagerResultTransformer,
-		neo4j.ExecuteQueryWithDatabase("neo4j"),
-	)
-	return err
-}
-
-func (r *SupplyChainRepository) CreateManufactures(ctx context.Context, rel domain.Manufactures) error {
-	_, err := neo4j.ExecuteQuery(ctx, r.client.Driver,
-		`MATCH (c:Company {name: $company_name})
-		 MATCH (ch:Chip {name: $chip_name})
-		 CREATE (c)-[:MANUFACTURES]->(ch)`,
-		map[string]any{
-			"company_name": rel.CompanyName,
-			"chip_name":    rel.ChipName,
-		},
-		neo4j.EagerResultTransformer,
-		neo4j.ExecuteQueryWithDatabase("neo4j"),
-	)
-	return err
 }
 
 func (r *SupplyChainRepository) CreateSuppliesEquipmentTo(ctx context.Context, rel domain.SuppliesEquipmentTo) error {
@@ -235,13 +122,28 @@ func (r *SupplyChainRepository) CreateSuppliesEquipmentTo(ctx context.Context, r
 	return err
 }
 
-func (r *SupplyChainRepository) CreateProvidesCloudFor(ctx context.Context, rel domain.ProvidesCloudFor) error {
+func (r *SupplyChainRepository) CreateManufacturesFor(ctx context.Context, rel domain.ManufacturesFor) error {
 	_, err := neo4j.ExecuteQuery(ctx, r.client.Driver,
-		`MATCH (p:Company {name: $provider_name})
+		`MATCH (m:Company {name: $manufacturer_name})
 		 MATCH (c:Company {name: $client_name})
-		 CREATE (p)-[:PROVIDES_CLOUD_FOR]->(c)`,
+		 CREATE (m)-[:MANUFACTURES_FOR]->(c)`,
 		map[string]any{
-			"provider_name": rel.ProviderName,
+			"manufacturer_name": rel.ManufacturerName,
+			"client_name":       rel.ClientName,
+		},
+		neo4j.EagerResultTransformer,
+		neo4j.ExecuteQueryWithDatabase("neo4j"),
+	)
+	return err
+}
+
+func (r *SupplyChainRepository) CreateSuppliesChipsTo(ctx context.Context, rel domain.SuppliesChipsTo) error {
+	_, err := neo4j.ExecuteQuery(ctx, r.client.Driver,
+		`MATCH (s:Company {name: $supplier_name})
+		 MATCH (c:Company {name: $client_name})
+		 CREATE (s)-[:SUPPLIES_CHIPS_TO]->(c)`,
+		map[string]any{
+			"supplier_name": rel.SupplierName,
 			"client_name":   rel.ClientName,
 		},
 		neo4j.EagerResultTransformer,
@@ -250,14 +152,29 @@ func (r *SupplyChainRepository) CreateProvidesCloudFor(ctx context.Context, rel 
 	return err
 }
 
-func (r *SupplyChainRepository) CreateUses(ctx context.Context, rel domain.Uses) error {
+func (r *SupplyChainRepository) CreateCompetesWith(ctx context.Context, rel domain.CompetesWith) error {
 	_, err := neo4j.ExecuteQuery(ctx, r.client.Driver,
-		`MATCH (c:Company {name: $company_name})
-		 MATCH (ch:Chip {name: $chip_name})
-		 CREATE (c)-[:USES]->(ch)`,
+		`MATCH (a:Company {name: $company_name})
+		 MATCH (b:Company {name: $competitor_name})
+		 CREATE (a)-[:COMPETES_WITH]->(b)`,
 		map[string]any{
-			"company_name": rel.CompanyName,
-			"chip_name":    rel.ChipName,
+			"company_name":    rel.CompanyName,
+			"competitor_name": rel.CompetitorName,
+		},
+		neo4j.EagerResultTransformer,
+		neo4j.ExecuteQueryWithDatabase("neo4j"),
+	)
+	return err
+}
+
+func (r *SupplyChainRepository) CreateProvidesCloudFor(ctx context.Context, rel domain.ProvidesCloudFor) error {
+	_, err := neo4j.ExecuteQuery(ctx, r.client.Driver,
+		`MATCH (p:Company {name: $provider_name})
+		 MATCH (c:Company {name: $client_name})
+		 CREATE (p)-[:PROVIDES_CLOUD_FOR]->(c)`,
+		map[string]any{
+			"provider_name": rel.ProviderName,
+			"client_name":   rel.ClientName,
 		},
 		neo4j.EagerResultTransformer,
 		neo4j.ExecuteQueryWithDatabase("neo4j"),
