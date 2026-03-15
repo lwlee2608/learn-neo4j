@@ -34,6 +34,7 @@ Graph expansion tool. Given a keyword (e.g. a company name), uses an LLM and web
 
 - `docs/getting-started.md` - local setup, seeding, and API examples
 - `docs/ai-graph-schema.md` - how the shared graph schema drives LLM prompts and validation
+- `docs/graph-rag-roadmap.md` - how the current repo fits GraphRAG and what to improve next
 - `docs/cypher-basics.md` - Cypher language primer
 - `docs/neo4j-browser.md` - using Neo4j Browser locally
 - `docs/neo4j-concepts.md` - graph database concepts used in this project
