@@ -8,6 +8,8 @@ neo4j:
   password: password
 openrouter:
   baseurl: https://openrouter.ai/api/v1
+openai:
+  baseurl: https://api.openai.com/v1
 embedding:
   model: text-embedding-3-small
   dimensions: 1536

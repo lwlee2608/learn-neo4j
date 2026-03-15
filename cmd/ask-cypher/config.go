@@ -19,6 +19,7 @@ type EmbeddingConfig struct {
 type Config struct {
 	Neo4j      n.Config
 	OpenRouter llm.Config
+	OpenAI     llm.Config
 	Embedding  EmbeddingConfig
 }
 
@@ -35,6 +36,8 @@ func InitConfig() {
 
 	_ = adder.BindEnv("openrouter.apikey", "OPENROUTER_API_KEY")
 	_ = adder.BindEnv("openrouter.baseurl", "OPENROUTER_BASE_URL")
+	_ = adder.BindEnv("openai.apikey", "OPENAI_API_KEY")
+	_ = adder.BindEnv("openai.baseurl", "OPENAI_BASE_URL")
 
 	if err := adder.ReadInConfig(); err != nil {
 		panic(err)

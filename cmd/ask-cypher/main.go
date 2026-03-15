@@ -47,8 +47,9 @@ func main() {
 	completion := llm.NewOpenAIService(config.OpenRouter.ApiKey, config.OpenRouter.BaseUrl)
 
 	var vs *vectorsearch.VectorSearch
-	if config.Embedding.Model != "" {
-		vs = vectorsearch.New(client.Driver, completion, config.Embedding.Model)
+	if config.Embedding.Model != "" && config.OpenAI.ApiKey != "" {
+		embeddingClient := llm.NewOpenAIService(config.OpenAI.ApiKey, config.OpenAI.BaseUrl)
+		vs = vectorsearch.New(client.Driver, embeddingClient, config.Embedding.Model)
 	}
 
 	executor := nlquery.NewNeo4jExecutor(client, graphschema.Default())

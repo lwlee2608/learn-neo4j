@@ -176,13 +176,10 @@ func main() {
 	}
 	slog.Info("Created COMPETES_WITH relationships", "count", len(competesWith))
 
-	// Generate embeddings if OpenRouter API key is available
-	apiKey := os.Getenv("OPENROUTER_API_KEY")
-	if apiKey == "" {
-		apiKey = os.Getenv("OPENROUTER_APIKEY")
-	}
+	// Generate embeddings if OpenAI API key is available
+	apiKey := os.Getenv("OPENAI_API_KEY")
 	if apiKey != "" {
-		baseURL := envOrDefault("OPENROUTER_BASE_URL", "https://openrouter.ai/api/v1")
+		baseURL := envOrDefault("OPENAI_BASE_URL", "https://api.openai.com/v1")
 		embModel := envOrDefault("EMBEDDING_MODEL", "text-embedding-3-small")
 		dimensions := 1536
 
@@ -207,7 +204,7 @@ func main() {
 		}
 		slog.Info("Embeddings complete")
 	} else {
-		slog.Warn("OPENROUTER_API_KEY not set, skipping embedding generation")
+		slog.Warn("OPENAI_API_KEY not set, skipping embedding generation")
 	}
 
 	slog.Info("Seed complete!")
