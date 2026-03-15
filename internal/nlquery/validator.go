@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"regexp"
 	"strings"
+
+	"github.com/lwlee2608/learn-neo4j/internal/graphschema"
 )
 
 var (
@@ -15,7 +17,7 @@ var (
 	parameterPattern        = regexp.MustCompile(`\$([A-Za-z_][A-Za-z0-9_]*)`)
 )
 
-func ValidatePlan(plan *Plan, schema GraphSchema) error {
+func ValidatePlan(plan *Plan, schema graphschema.GraphSchema) error {
 	if plan == nil {
 		return errors.New("plan is required")
 	}
@@ -64,8 +66,8 @@ func ValidatePlan(plan *Plan, schema GraphSchema) error {
 	return nil
 }
 
-func validateLabels(query string, schema GraphSchema) error {
-	allowed := schema.allowedLabels()
+func validateLabels(query string, schema graphschema.GraphSchema) error {
+	allowed := schema.AllowedLabels()
 	matches := labelPattern.FindAllStringSubmatch(query, -1)
 	for _, match := range matches {
 		if _, ok := allowed[match[1]]; !ok {
@@ -75,8 +77,8 @@ func validateLabels(query string, schema GraphSchema) error {
 	return nil
 }
 
-func validateRelationshipTypes(query string, schema GraphSchema) error {
-	allowed := schema.allowedRelationshipTypes()
+func validateRelationshipTypes(query string, schema graphschema.GraphSchema) error {
+	allowed := schema.AllowedRelationshipTypes()
 	matches := relationshipPattern.FindAllStringSubmatch(query, -1)
 	for _, match := range matches {
 		if _, ok := allowed[match[1]]; !ok {
@@ -86,8 +88,8 @@ func validateRelationshipTypes(query string, schema GraphSchema) error {
 	return nil
 }
 
-func validateProperties(query string, schema GraphSchema) error {
-	allowed := schema.allowedProperties()
+func validateProperties(query string, schema graphschema.GraphSchema) error {
+	allowed := schema.AllowedProperties()
 	matches := propertyPattern.FindAllStringSubmatch(query, -1)
 	for _, match := range matches {
 		prop := match[1]

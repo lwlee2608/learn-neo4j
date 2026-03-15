@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"sync"
 
+	"github.com/lwlee2608/learn-neo4j/internal/graphschema"
 	llm "github.com/lwlee2608/learn-neo4j/pkg/ai"
 	"github.com/openai/openai-go/v3"
 	"github.com/openai/openai-go/v3/packages/param"
@@ -24,7 +25,7 @@ type executeCypherInput struct {
 }
 
 type ExecuteCypherTool struct {
-	schema   GraphSchema
+	schema   graphschema.GraphSchema
 	executor QueryExecutor
 
 	mu         sync.RWMutex
@@ -32,7 +33,7 @@ type ExecuteCypherTool struct {
 	lastResult *QueryResult
 }
 
-func NewExecuteCypherTool(schema GraphSchema, executor QueryExecutor) *ExecuteCypherTool {
+func NewExecuteCypherTool(schema graphschema.GraphSchema, executor QueryExecutor) *ExecuteCypherTool {
 	return &ExecuteCypherTool{
 		schema:   schema,
 		executor: executor,

@@ -1,6 +1,10 @@
 package nlquery
 
-import "testing"
+import (
+	"testing"
+
+	"github.com/lwlee2608/learn-neo4j/internal/graphschema"
+)
 
 func TestValidatePlanAcceptsReadOnlyParameterizedQuery(t *testing.T) {
 	plan := &Plan{
@@ -9,7 +13,7 @@ func TestValidatePlanAcceptsReadOnlyParameterizedQuery(t *testing.T) {
 		ReadOnly: true,
 	}
 
-	if err := ValidatePlan(plan, DefaultGraphSchema()); err != nil {
+	if err := ValidatePlan(plan, graphschema.Default()); err != nil {
 		t.Fatalf("expected plan to be valid, got error: %v", err)
 	}
 }
@@ -21,7 +25,7 @@ func TestValidatePlanRejectsUnsafeKeyword(t *testing.T) {
 		ReadOnly: true,
 	}
 
-	if err := ValidatePlan(plan, DefaultGraphSchema()); err == nil {
+	if err := ValidatePlan(plan, graphschema.Default()); err == nil {
 		t.Fatal("expected plan to be rejected")
 	}
 }
@@ -33,7 +37,7 @@ func TestValidatePlanRejectsStringLiteral(t *testing.T) {
 		ReadOnly: true,
 	}
 
-	if err := ValidatePlan(plan, DefaultGraphSchema()); err == nil {
+	if err := ValidatePlan(plan, graphschema.Default()); err == nil {
 		t.Fatal("expected plan to be rejected")
 	}
 }
@@ -45,7 +49,7 @@ func TestValidatePlanRejectsUnknownRelationship(t *testing.T) {
 		ReadOnly: true,
 	}
 
-	if err := ValidatePlan(plan, DefaultGraphSchema()); err == nil {
+	if err := ValidatePlan(plan, graphschema.Default()); err == nil {
 		t.Fatal("expected plan to be rejected")
 	}
 }

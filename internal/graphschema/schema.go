@@ -1,4 +1,4 @@
-package nlquery
+package graphschema
 
 import (
 	"bytes"
@@ -14,7 +14,7 @@ type GraphSchema struct {
 	Properties        map[string][]string
 }
 
-func DefaultGraphSchema() GraphSchema {
+func Default() GraphSchema {
 	return GraphSchema{
 		Labels: []string{"Company"},
 		RelationshipTypes: []string{
@@ -63,7 +63,7 @@ func (s GraphSchema) Prompt() string {
 	return buf.String()
 }
 
-func (s GraphSchema) allowedLabels() map[string]struct{} {
+func (s GraphSchema) AllowedLabels() map[string]struct{} {
 	allowed := make(map[string]struct{}, len(s.Labels))
 	for _, label := range s.Labels {
 		allowed[label] = struct{}{}
@@ -71,7 +71,7 @@ func (s GraphSchema) allowedLabels() map[string]struct{} {
 	return allowed
 }
 
-func (s GraphSchema) allowedRelationshipTypes() map[string]struct{} {
+func (s GraphSchema) AllowedRelationshipTypes() map[string]struct{} {
 	allowed := make(map[string]struct{}, len(s.RelationshipTypes))
 	for _, rel := range s.RelationshipTypes {
 		allowed[rel] = struct{}{}
@@ -79,7 +79,7 @@ func (s GraphSchema) allowedRelationshipTypes() map[string]struct{} {
 	return allowed
 }
 
-func (s GraphSchema) allowedProperties() map[string]struct{} {
+func (s GraphSchema) AllowedProperties() map[string]struct{} {
 	allowed := make(map[string]struct{})
 	for _, props := range s.Properties {
 		for _, prop := range props {

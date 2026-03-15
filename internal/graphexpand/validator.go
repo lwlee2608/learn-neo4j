@@ -4,17 +4,13 @@ import (
 	"errors"
 	"fmt"
 	"strings"
+
+	"github.com/lwlee2608/learn-neo4j/internal/graphschema"
 )
 
-var allowedRelationshipTypes = map[string]struct{}{
-	"SUPPLIES_EQUIPMENT_TO": {},
-	"MANUFACTURES_FOR":      {},
-	"SUPPLIES_CHIPS_TO":     {},
-	"PROVIDES_CLOUD_FOR":    {},
-	"COMPETES_WITH":         {},
-}
-
 func ValidatePlan(plan *Plan) error {
+	allowedRelationshipTypes := graphschema.Default().AllowedRelationshipTypes()
+
 	if plan == nil {
 		return errors.New("plan is required")
 	}
