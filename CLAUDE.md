@@ -28,7 +28,8 @@ Go REST API using Gin, backed by Neo4j graph database. Layered architecture:
 - **`internal/api/http/`** - HTTP layer: router, handlers, DTOs, middleware (request logging, error handling)
 - **`internal/service/`** - Business logic layer
 - **`internal/repository/`** - Neo4j Cypher queries via `neo4j-go-driver/v5`
-- **`internal/domain/`** - Domain models (Company, Chip, and relationship types)
+- **`internal/domain/`** - Domain models (Company and relationship types)
+- **`internal/graphschema/`** - Shared graph schema (labels, relationship types, properties, LLM prompt template) used by `nlquery` and `graphexpand`
 - **`pkg/neo4j/`** - Neo4j client wrapper (connection setup/teardown)
 
 All repository methods use `neo4j.ExecuteQuery` with `EagerResultTransformer` and explicitly target the `"neo4j"` database.
@@ -37,18 +38,17 @@ Config is loaded from `application.yml` with env var override support (dot-separ
 
 ## Domain: AI Supply Chain
 
-Two node types: **Company** (AI labs, chip designers, manufacturers, equipment suppliers, cloud providers) and **Chip** (GPUs/accelerators).
+One node type: **Company** (AI labs, chip designers, manufacturers, equipment suppliers, cloud providers).
 
-Five relationship types:
-- `(Company)-[:DESIGNED]->(Chip)`
-- `(Company)-[:MANUFACTURES]->(Chip)`
+Five relationship types (all Company-to-Company):
 - `(Company)-[:SUPPLIES_EQUIPMENT_TO]->(Company)`
+- `(Company)-[:MANUFACTURES_FOR]->(Company)`
+- `(Company)-[:SUPPLIES_CHIPS_TO]->(Company)`
 - `(Company)-[:PROVIDES_CLOUD_FOR]->(Company)`
-- `(Company)-[:USES]->(Chip)`
+- `(Company)-[:COMPETES_WITH]->(Company)`
 
 ## API Routes
 
 Health check at `/health`. All endpoints under `/api/v1`:
 - `/companies` (GET list, POST create), `/companies/:name` (GET with relations)
-- `/chips` (GET list, POST create), `/chips/:name` (GET with relations)
-- `/relationships/designed|manufactures|supplies-equipment-to|provides-cloud-for|uses` (POST create)
+- `/relationships/supplies-equipment-to|manufactures-for|supplies-chips-to|provides-cloud-for|competes-with` (POST create)
