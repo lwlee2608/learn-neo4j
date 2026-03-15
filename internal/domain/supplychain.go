@@ -1,10 +1,11 @@
 package domain
 
 type Company struct {
-	Name    string `json:"name"`
-	Type    string `json:"type"`
-	Founded int    `json:"founded"`
-	HQ      string `json:"hq"`
+	Name        string `json:"name"`
+	Type        string `json:"type"`
+	Founded     int    `json:"founded"`
+	HQ          string `json:"hq"`
+	Description string `json:"description,omitempty"`
 }
 
 type SuppliesEquipmentTo struct {

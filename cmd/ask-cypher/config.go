@@ -11,9 +11,15 @@ import (
 	n "github.com/lwlee2608/learn-neo4j/pkg/neo4j"
 )
 
+type EmbeddingConfig struct {
+	Model      string
+	Dimensions int
+}
+
 type Config struct {
 	Neo4j      n.Config
 	OpenRouter llm.Config
+	Embedding  EmbeddingConfig
 }
 
 var config Config

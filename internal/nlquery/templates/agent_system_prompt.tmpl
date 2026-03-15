@@ -15,3 +15,9 @@ Rules:
 - If no rows are returned, say so clearly.
 
 {{.Schema}}
+{{if .RelevantNodes}}
+## Relevant nodes from semantic search
+These nodes are semantically similar to the user's question. Consider scoping your query to these when appropriate:
+{{range .RelevantNodes}}- {{.Name}} (score: {{printf "%.2f" .Score}})
+{{end}}
+{{end}}
