@@ -1,6 +1,6 @@
 # learn-neo4j
 
-Go REST API backed by Neo4j, modelling the AI supply chain (companies, chips, and their relationships).
+Go REST API backed by Neo4j, modelling the AI supply chain as companies and company-to-company relationships.
 
 ## Graph Schema
 
@@ -16,7 +16,7 @@ When the graph model changes, update `internal/graphschema/schema.go` so both AI
 
 ### `cmd/learn-neo4j`
 
-Main API server. Starts an HTTP server (Gin) exposing REST endpoints for querying and creating companies, chips, and relationships in the graph database.
+Main API server. Starts an HTTP server (Gin) exposing REST endpoints for querying and creating companies and their relationships in the graph database.
 
 ### `cmd/seed-data`
 
