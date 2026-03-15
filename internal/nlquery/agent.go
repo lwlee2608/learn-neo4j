@@ -8,6 +8,7 @@ import (
 	"strings"
 	"text/template"
 
+	"github.com/lwlee2608/learn-neo4j/internal/graphschema"
 	llm "github.com/lwlee2608/learn-neo4j/pkg/ai"
 	"github.com/openai/openai-go/v3"
 )
@@ -24,20 +25,20 @@ type AgentConfig struct {
 	Temperature float64
 	MaxTokens   int
 	Provider    *llm.ProviderOption
-	Schema      GraphSchema
+	Schema      graphschema.GraphSchema
 	MaxSteps    int
 }
 
 type QueryAgent struct {
 	agent  *llm.Agent
 	option llm.CompletionOption
-	schema GraphSchema
+	schema graphschema.GraphSchema
 	tool   *ExecuteCypherTool
 }
 
 func NewQueryAgent(completion llm.Completion, executor QueryExecutor, cfg AgentConfig) *QueryAgent {
 	if cfg.Schema.Labels == nil {
-		cfg.Schema = DefaultGraphSchema()
+		cfg.Schema = graphschema.Default()
 	}
 	if cfg.MaxTokens == 0 {
 		cfg.MaxTokens = defaultMaxTokens

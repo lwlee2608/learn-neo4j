@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/lwlee2608/learn-neo4j/internal/graphschema"
 	llm "github.com/lwlee2608/learn-neo4j/pkg/ai"
 	"github.com/openai/openai-go/v3"
 )
@@ -21,18 +22,18 @@ type TranslatorConfig struct {
 	Temperature float64
 	MaxTokens   int
 	Provider    *llm.ProviderOption
-	Schema      GraphSchema
+	Schema      graphschema.GraphSchema
 }
 
 type Translator struct {
 	completion llm.Completion
 	option     llm.CompletionOption
-	schema     GraphSchema
+	schema     graphschema.GraphSchema
 }
 
 func NewTranslator(completion llm.Completion, cfg TranslatorConfig) *Translator {
 	if cfg.Schema.Labels == nil {
-		cfg.Schema = DefaultGraphSchema()
+		cfg.Schema = graphschema.Default()
 	}
 	if cfg.MaxTokens == 0 {
 		cfg.MaxTokens = defaultMaxTokens

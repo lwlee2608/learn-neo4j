@@ -9,6 +9,7 @@ import (
 	"os"
 	"strings"
 
+	"github.com/lwlee2608/learn-neo4j/internal/graphschema"
 	"github.com/lwlee2608/learn-neo4j/internal/nlquery"
 	llm "github.com/lwlee2608/learn-neo4j/pkg/ai"
 	n "github.com/lwlee2608/learn-neo4j/pkg/neo4j"
@@ -43,7 +44,7 @@ func main() {
 	defer client.Close(context.Background())
 
 	completion := llm.NewOpenAIService(config.OpenRouter.ApiKey, config.OpenRouter.BaseUrl)
-	executor := nlquery.NewNeo4jExecutor(client, nlquery.DefaultGraphSchema())
+	executor := nlquery.NewNeo4jExecutor(client, graphschema.Default())
 	queryAgent := nlquery.NewQueryAgent(completion, executor, nlquery.AgentConfig{
 		Model:       *modelFlag,
 		Temperature: *temperatureFlag,

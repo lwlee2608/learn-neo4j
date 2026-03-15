@@ -4,18 +4,19 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/lwlee2608/learn-neo4j/internal/graphschema"
 	n "github.com/lwlee2608/learn-neo4j/pkg/neo4j"
 	neo4jdb "github.com/neo4j/neo4j-go-driver/v5/neo4j"
 )
 
 type Neo4jExecutor struct {
 	client *n.Client
-	schema GraphSchema
+	schema graphschema.GraphSchema
 }
 
-func NewNeo4jExecutor(client *n.Client, schema GraphSchema) *Neo4jExecutor {
+func NewNeo4jExecutor(client *n.Client, schema graphschema.GraphSchema) *Neo4jExecutor {
 	if schema.Labels == nil {
-		schema = DefaultGraphSchema()
+		schema = graphschema.Default()
 	}
 
 	return &Neo4jExecutor{
@@ -28,9 +29,9 @@ func (e *Neo4jExecutor) ExecuteReadOnly(ctx context.Context, plan *Plan) (*Query
 	return ExecuteReadOnly(ctx, e.client, plan, e.schema)
 }
 
-func ExecuteReadOnly(ctx context.Context, client *n.Client, plan *Plan, schema GraphSchema) (*QueryResult, error) {
+func ExecuteReadOnly(ctx context.Context, client *n.Client, plan *Plan, schema graphschema.GraphSchema) (*QueryResult, error) {
 	if schema.Labels == nil {
-		schema = DefaultGraphSchema()
+		schema = graphschema.Default()
 	}
 
 	if err := ValidatePlan(plan, schema); err != nil {
