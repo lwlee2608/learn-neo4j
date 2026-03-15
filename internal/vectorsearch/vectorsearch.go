@@ -51,6 +51,10 @@ func (v *VectorSearch) EmbedAndStore(ctx context.Context, label, name, text stri
 
 // Search embeds the query and returns the top-k similar nodes.
 func (v *VectorSearch) Search(ctx context.Context, query string, topK int) ([]SearchResult, error) {
+	return v.searchWithIndex(ctx, "company_embedding", query, topK)
+}
+
+func (v *VectorSearch) searchWithIndex(ctx context.Context, index, query string, topK int) ([]SearchResult, error) {
 	vec, err := v.embedding.Embedding(ctx, query, v.model)
 	if err != nil {
 		return nil, fmt.Errorf("embed query: %w", err)
@@ -61,11 +65,13 @@ func (v *VectorSearch) Search(ctx context.Context, query string, topK int) ([]Se
 		f64[i] = float64(val)
 	}
 
-	result, err := neo4j.ExecuteQuery(ctx, v.driver,
-		`CALL db.index.vector.queryNodes('company_embedding', $topK, $queryVector)
+	cypher := fmt.Sprintf(
+		`CALL db.index.vector.queryNodes('%s', $topK, $queryVector)
 		 YIELD node, score
 		 RETURN node.name AS name, score
-		 ORDER BY score DESC`,
+		 ORDER BY score DESC`, index)
+
+	result, err := neo4j.ExecuteQuery(ctx, v.driver, cypher,
 		map[string]any{"topK": topK, "queryVector": f64},
 		neo4j.EagerResultTransformer,
 		neo4j.ExecuteQueryWithDatabase("neo4j"),
