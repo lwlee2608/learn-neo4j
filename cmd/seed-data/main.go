@@ -5,6 +5,8 @@ import (
 	"log/slog"
 	"os"
 
+	"github.com/lwlee2608/learn-neo4j/internal/vectorsearch"
+	llm "github.com/lwlee2608/learn-neo4j/pkg/ai"
 	"github.com/neo4j/neo4j-go-driver/v5/neo4j"
 )
 
@@ -38,26 +40,43 @@ func main() {
 
 	// Companies
 	companies := []map[string]any{
-		{"name": "NVIDIA", "type": "chip_designer", "founded": 1993, "hq": "Santa Clara"},
-		{"name": "AMD", "type": "chip_designer", "founded": 1969, "hq": "Santa Clara"},
-		{"name": "Intel", "type": "chip_designer", "founded": 1968, "hq": "Santa Clara"},
-		{"name": "TSMC", "type": "manufacturer", "founded": 1987, "hq": "Hsinchu"},
-		{"name": "Samsung Foundry", "type": "manufacturer", "founded": 1969, "hq": "Suwon"},
-		{"name": "ASML", "type": "equipment_supplier", "founded": 1984, "hq": "Veldhoven"},
-		{"name": "OpenAI", "type": "ai_lab", "founded": 2015, "hq": "San Francisco"},
-		{"name": "Anthropic", "type": "ai_lab", "founded": 2021, "hq": "San Francisco"},
-		{"name": "Google DeepMind", "type": "ai_lab", "founded": 2010, "hq": "London"},
-		{"name": "Meta AI", "type": "ai_lab", "founded": 2013, "hq": "Menlo Park"},
-		{"name": "Moonshot AI", "type": "ai_lab", "founded": 2023, "hq": "Beijing"},
-		{"name": "z.ai", "type": "ai_lab", "founded": 2023, "hq": "San Francisco"},
-		{"name": "AWS", "type": "cloud_provider", "founded": 2006, "hq": "Seattle"},
-		{"name": "Microsoft Azure", "type": "cloud_provider", "founded": 2010, "hq": "Redmond"},
-		{"name": "Google Cloud", "type": "cloud_provider", "founded": 2008, "hq": "Sunnyvale"},
-		{"name": "Oracle Cloud", "type": "cloud_provider", "founded": 2016, "hq": "Austin"},
-		{"name": "CoreWeave", "type": "cloud_provider", "founded": 2017, "hq": "Roseland"},
+		{"name": "NVIDIA", "type": "chip_designer", "founded": 1993, "hq": "Santa Clara",
+			"description": "American chip designer headquartered in Santa Clara. Designs GPUs and AI accelerators (H100, A100) used for training and inference of large language models. Dominates the AI chip market. Chips are manufactured by TSMC in Taiwan."},
+		{"name": "AMD", "type": "chip_designer", "founded": 1969, "hq": "Santa Clara",
+			"description": "American semiconductor company designing CPUs and GPUs. Competes with NVIDIA in AI accelerators (MI300X) and with Intel in server CPUs. Chips are fabricated by TSMC in Taiwan."},
+		{"name": "Intel", "type": "chip_designer", "founded": 1968, "hq": "Santa Clara",
+			"description": "American semiconductor company designing CPUs and AI accelerators (Gaudi). Has its own fabs but also uses TSMC for advanced nodes. Competes with NVIDIA and AMD in the AI chip space."},
+		{"name": "TSMC", "type": "manufacturer", "founded": 1987, "hq": "Hsinchu",
+			"description": "Taiwan-based semiconductor manufacturer. World's largest chip foundry, fabricating chips for NVIDIA, AMD, and Intel. Located in Hsinchu, Taiwan. Critical single point of failure in the global AI supply chain due to geographic concentration."},
+		{"name": "Samsung Foundry", "type": "manufacturer", "founded": 1969, "hq": "Suwon",
+			"description": "South Korean semiconductor foundry based in Suwon. Manufactures chips for Google and AWS. Competes with TSMC but has smaller market share in advanced nodes."},
+		{"name": "ASML", "type": "equipment_supplier", "founded": 1984, "hq": "Veldhoven",
+			"description": "Dutch company building extreme ultraviolet (EUV) lithography machines used by chip foundries like TSMC and Samsung. Sole supplier of EUV equipment, making it a critical bottleneck in semiconductor manufacturing."},
+		{"name": "OpenAI", "type": "ai_lab", "founded": 2015, "hq": "San Francisco",
+			"description": "San Francisco-based AI research lab. Creator of GPT-4 and ChatGPT. Heavily reliant on NVIDIA GPUs for training. Uses Microsoft Azure, CoreWeave, and Oracle Cloud for compute infrastructure."},
+		{"name": "Anthropic", "type": "ai_lab", "founded": 2021, "hq": "San Francisco",
+			"description": "San Francisco-based AI safety company. Creator of Claude. Uses NVIDIA GPUs and AWS cloud infrastructure for training and serving models. Competes with OpenAI and Google DeepMind."},
+		{"name": "Google DeepMind", "type": "ai_lab", "founded": 2010, "hq": "London",
+			"description": "London-based AI research lab owned by Google. Creator of Gemini models. Uses Google Cloud infrastructure and custom TPU chips alongside Intel processors. Competes with OpenAI and Anthropic."},
+		{"name": "Meta AI", "type": "ai_lab", "founded": 2013, "hq": "Menlo Park",
+			"description": "Menlo Park-based AI research division of Meta. Develops Llama open-source models. Uses NVIDIA and AMD GPUs with CoreWeave cloud infrastructure. Competes with OpenAI, Anthropic, and Google DeepMind."},
+		{"name": "Moonshot AI", "type": "ai_lab", "founded": 2023, "hq": "Beijing",
+			"description": "Beijing-based Chinese AI startup. Develops large language models for the Chinese market. Uses NVIDIA GPUs. Competes with z.ai in the Chinese AI space."},
+		{"name": "z.ai", "type": "ai_lab", "founded": 2023, "hq": "San Francisco",
+			"description": "San Francisco-based AI startup founded in 2023. Develops AI models and competes with Moonshot AI. Uses NVIDIA GPUs for compute."},
+		{"name": "AWS", "type": "cloud_provider", "founded": 2006, "hq": "Seattle",
+			"description": "Amazon's cloud computing platform based in Seattle. Provides cloud infrastructure for Anthropic. Designs custom Trainium and Inferentia AI chips manufactured by Samsung. Competes with Azure, Google Cloud, Oracle Cloud, and CoreWeave."},
+		{"name": "Microsoft Azure", "type": "cloud_provider", "founded": 2010, "hq": "Redmond",
+			"description": "Microsoft's cloud computing platform based in Redmond. Major cloud provider for OpenAI. Competes with AWS, Google Cloud, Oracle Cloud, and CoreWeave in cloud infrastructure."},
+		{"name": "Google Cloud", "type": "cloud_provider", "founded": 2008, "hq": "Sunnyvale",
+			"description": "Google's cloud computing platform based in Sunnyvale. Provides infrastructure for Google DeepMind. Offers TPU chips for AI workloads. Competes with AWS, Azure, Oracle Cloud, and CoreWeave."},
+		{"name": "Oracle Cloud", "type": "cloud_provider", "founded": 2016, "hq": "Austin",
+			"description": "Oracle's cloud infrastructure platform based in Austin. Provides cloud compute for OpenAI training runs. Competes with AWS, Azure, Google Cloud, and CoreWeave."},
+		{"name": "CoreWeave", "type": "cloud_provider", "founded": 2017, "hq": "Roseland",
+			"description": "GPU-focused cloud provider based in Roseland, New Jersey. Specializes in NVIDIA GPU clusters for AI workloads. Provides compute for OpenAI and Meta AI. Competes with AWS, Azure, Google Cloud, and Oracle Cloud."},
 	}
 	for _, c := range companies {
-		run(ctx, driver, "CREATE (:Company {name: $name, type: $type, founded: $founded, hq: $hq})", c)
+		run(ctx, driver, "CREATE (:Company {name: $name, type: $type, founded: $founded, hq: $hq, description: $description})", c)
 	}
 	slog.Info("Created companies", "count", len(companies))
 
@@ -156,6 +175,37 @@ func main() {
 			 CREATE (a)-[:COMPETES_WITH]->(b)`, c)
 	}
 	slog.Info("Created COMPETES_WITH relationships", "count", len(competesWith))
+
+	// Generate embeddings if OpenAI API key is available
+	apiKey := os.Getenv("OPENAI_API_KEY")
+	if apiKey != "" {
+		baseURL := envOrDefault("OPENAI_BASE_URL", "https://api.openai.com/v1")
+		embModel := envOrDefault("EMBEDDING_MODEL", "text-embedding-3-small")
+		dimensions := 1536
+
+		aiClient := llm.NewOpenAIService(apiKey, baseURL)
+		vs := vectorsearch.New(driver, aiClient, embModel)
+
+		slog.Info("Creating vector index", "dimensions", dimensions)
+		if err := vs.CreateIndex(ctx, dimensions); err != nil {
+			slog.Error("Failed to create vector index", "error", err)
+			os.Exit(1)
+		}
+
+		slog.Info("Generating embeddings for companies")
+		for _, c := range companies {
+			name := c["name"].(string)
+			desc := c["description"].(string)
+			if err := vs.EmbedAndStore(ctx, "Company", name, desc); err != nil {
+				slog.Error("Failed to embed company", "name", name, "error", err)
+				os.Exit(1)
+			}
+			slog.Info("Embedded company", "name", name)
+		}
+		slog.Info("Embeddings complete")
+	} else {
+		slog.Warn("OPENAI_API_KEY not set, skipping embedding generation")
+	}
 
 	slog.Info("Seed complete!")
 }

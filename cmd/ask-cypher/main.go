@@ -11,6 +11,7 @@ import (
 
 	"github.com/lwlee2608/learn-neo4j/internal/graphschema"
 	"github.com/lwlee2608/learn-neo4j/internal/nlquery"
+	"github.com/lwlee2608/learn-neo4j/internal/vectorsearch"
 	llm "github.com/lwlee2608/learn-neo4j/pkg/ai"
 	n "github.com/lwlee2608/learn-neo4j/pkg/neo4j"
 )
@@ -44,11 +45,19 @@ func main() {
 	defer client.Close(context.Background())
 
 	completion := llm.NewOpenAIService(config.OpenRouter.ApiKey, config.OpenRouter.BaseUrl)
+
+	var vs *vectorsearch.VectorSearch
+	if config.Embedding.Model != "" && config.OpenAI.ApiKey != "" {
+		embeddingClient := llm.NewOpenAIService(config.OpenAI.ApiKey, config.OpenAI.BaseUrl)
+		vs = vectorsearch.New(client.Driver, embeddingClient, config.Embedding.Model)
+	}
+
 	executor := nlquery.NewNeo4jExecutor(client, graphschema.Default())
 	queryAgent := nlquery.NewQueryAgent(completion, executor, nlquery.AgentConfig{
-		Model:       *modelFlag,
-		Temperature: *temperatureFlag,
-		MaxTokens:   *maxTokensFlag,
+		Model:        *modelFlag,
+		Temperature:  *temperatureFlag,
+		MaxTokens:    *maxTokensFlag,
+		VectorSearch: vs,
 	})
 
 	ctx := context.Background()

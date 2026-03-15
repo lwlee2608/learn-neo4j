@@ -25,7 +25,7 @@ func Default() GraphSchema {
 			"COMPETES_WITH",
 		},
 		Properties: map[string][]string{
-			"Company": {"name", "type", "founded", "hq"},
+			"Company": {"name", "type", "founded", "hq", "description"},
 		},
 	}
 }

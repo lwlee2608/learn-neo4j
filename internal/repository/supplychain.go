@@ -19,12 +19,13 @@ func NewSupplyChainRepository(client *n.Client) *SupplyChainRepository {
 
 func (r *SupplyChainRepository) CreateCompany(ctx context.Context, company domain.Company) error {
 	_, err := neo4j.ExecuteQuery(ctx, r.client.Driver,
-		"CREATE (c:Company {name: $name, type: $type, founded: $founded, hq: $hq})",
+		"CREATE (c:Company {name: $name, type: $type, founded: $founded, hq: $hq, description: $description})",
 		map[string]any{
-			"name":    company.Name,
-			"type":    company.Type,
-			"founded": company.Founded,
-			"hq":      company.HQ,
+			"name":        company.Name,
+			"type":        company.Type,
+			"founded":     company.Founded,
+			"hq":          company.HQ,
+			"description": company.Description,
 		},
 		neo4j.EagerResultTransformer,
 		neo4j.ExecuteQueryWithDatabase("neo4j"),
@@ -34,7 +35,7 @@ func (r *SupplyChainRepository) CreateCompany(ctx context.Context, company domai
 
 func (r *SupplyChainRepository) ListCompanies(ctx context.Context) ([]domain.Company, error) {
 	result, err := neo4j.ExecuteQuery(ctx, r.client.Driver,
-		"MATCH (c:Company) RETURN c.name AS name, c.type AS type, c.founded AS founded, c.hq AS hq ORDER BY c.name",
+		"MATCH (c:Company) RETURN c.name AS name, c.type AS type, c.founded AS founded, c.hq AS hq, c.description AS description ORDER BY c.name",
 		nil,
 		neo4j.EagerResultTransformer,
 		neo4j.ExecuteQueryWithDatabase("neo4j"),
@@ -49,11 +50,13 @@ func (r *SupplyChainRepository) ListCompanies(ctx context.Context) ([]domain.Com
 		cType, _ := record.Get("type")
 		founded, _ := record.Get("founded")
 		hq, _ := record.Get("hq")
+		description, _ := record.Get("description")
 		companies = append(companies, domain.Company{
-			Name:    name.(string),
-			Type:    stringOrEmpty(cType),
-			Founded: intOrZero(founded),
-			HQ:      stringOrEmpty(hq),
+			Name:        name.(string),
+			Type:        stringOrEmpty(cType),
+			Founded:     intOrZero(founded),
+			HQ:          stringOrEmpty(hq),
+			Description: stringOrEmpty(description),
 		})
 	}
 	return companies, nil
@@ -71,7 +74,7 @@ func (r *SupplyChainRepository) GetCompany(ctx context.Context, name string) (*d
 		 OPTIONAL MATCH (c)-[:PROVIDES_CLOUD_FOR]->(cl:Company)
 		 WITH c, equipmentClients, manufacturingFor, chipSuppliedTo, collect(DISTINCT cl.name) AS cloudClients
 		 OPTIONAL MATCH (c)-[:COMPETES_WITH]-(comp:Company)
-		 RETURN c.name AS name, c.type AS type, c.founded AS founded, c.hq AS hq,
+		 RETURN c.name AS name, c.type AS type, c.founded AS founded, c.hq AS hq, c.description AS description,
 		        equipmentClients, manufacturingFor, chipSuppliedTo, cloudClients,
 		        collect(DISTINCT comp.name) AS competitors`,
 		map[string]any{"name": name},
@@ -91,13 +94,15 @@ func (r *SupplyChainRepository) GetCompany(ctx context.Context, name string) (*d
 	cType, _ := record.Get("type")
 	founded, _ := record.Get("founded")
 	hq, _ := record.Get("hq")
+	description, _ := record.Get("description")
 
 	return &domain.CompanyWithRelations{
 		Company: domain.Company{
-			Name:    cName.(string),
-			Type:    stringOrEmpty(cType),
-			Founded: intOrZero(founded),
-			HQ:      stringOrEmpty(hq),
+			Name:        cName.(string),
+			Type:        stringOrEmpty(cType),
+			Founded:     intOrZero(founded),
+			HQ:          stringOrEmpty(hq),
+			Description: stringOrEmpty(description),
 		},
 		EquipmentClients: toStringSlice(record, "equipmentClients"),
 		ManufacturingFor: toStringSlice(record, "manufacturingFor"),
