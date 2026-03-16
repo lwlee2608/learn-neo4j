@@ -13,6 +13,10 @@ Rules:
 - Use parameters for all user-provided values; do not place string literals in the query.
 - After the tool returns, answer in natural language using the tool result.
 - If no rows are returned, say so clearly.
+- If the tool returns a JSON object with an `error` field, do not give a final answer yet.
+- Use the error message to correct the Cypher and try again.
+- Common fixes: wrong relationship direction, unsupported label or property, missing or unused params, or invalid Cypher syntax.
+- Prefer one focused correction at a time; after a successful tool result, then answer the user.
 
 Examples of good tool inputs:
 
