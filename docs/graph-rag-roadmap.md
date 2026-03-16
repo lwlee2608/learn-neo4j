@@ -20,6 +20,7 @@ What's missing for a full GraphRAG system: hybrid retrieval (graph + vector + do
 Add 3–5 example question→Cypher pairs to the agent system prompt template (`internal/nlquery/templates/agent_system_prompt.tmpl`). This is the single biggest lever for Cypher generation accuracy.
 
 Good examples to include:
+
 - simple lookup: "What type of company is TSMC?"
 - relationship traversal: "Who supplies chips to OpenAI?"
 - multi-hop: "Trace the supply chain from ASML to OpenAI"
@@ -44,11 +45,11 @@ Add a `description` text property to Company nodes. This is useful on its own fo
 
 The current graph has only `Company`. Adding more types enables richer queries:
 
-| Node type | Examples | Enables |
-|-----------|----------|---------|
-| `Product` | H100, GPT-4, EUV lithography | "what products does NVIDIA supply to OpenAI?" |
-| `Technology` | CUDA, Triton, CoWoS packaging | "what technologies does TSMC use?" |
-| `Country` | Taiwan, USA, Netherlands | "what is the geographic concentration risk?" |
+| Node type    | Examples                      | Enables                                       |
+| ------------ | ----------------------------- | --------------------------------------------- |
+| `Product`    | H100, GPT-4, EUV lithography  | "what products does NVIDIA supply to OpenAI?" |
+| `Technology` | CUDA, Triton, CoWoS packaging | "what technologies does TSMC use?"            |
+| `Country`    | Taiwan, USA, Netherlands      | "what is the geographic concentration risk?"  |
 
 Update `internal/graphschema/schema.go`, add corresponding relationship types, and extend the seed data.
 
@@ -59,6 +60,7 @@ Store canonical names and aliases to prevent duplicates and improve match qualit
 Examples: `TSMC` / `Taiwan Semiconductor Manufacturing Company`, `OpenAI` / `OpenAI, Inc.`
 
 Options:
+
 - an `aliases` array property on Company nodes, matched with `WHERE c.name = $name OR $name IN c.aliases`
 - a separate `Alias` node type with `(:Alias)-[:ALIAS_OF]->(:Company)`
 
@@ -71,6 +73,7 @@ The second option is more flexible but adds query complexity.
 Store embeddings on nodes using Neo4j's native vector index. Before generating Cypher, do a vector similarity search to find relevant nodes, then scope the Cypher query to that subgraph.
 
 Flow:
+
 1. embed the user question
 2. vector search to find top-k relevant nodes
 3. feed those node names into the agent as context
@@ -122,6 +125,7 @@ This enables queries like "who currently manufactures for NVIDIA" and lets the s
 Create a set of 20–30 questions with expected Cypher and expected results. Run after prompt or schema changes to catch regressions.
 
 Track failure modes:
+
 - invalid Cypher generation
 - wrong entity resolution
 - empty results when data exists
