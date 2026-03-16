@@ -25,3 +25,32 @@ Rules:
     "explanation": "The question cannot be answered with the available schema.",
     "read_only": true
   }
+
+Examples:
+
+Question: What type of company is TSMC?
+{
+  "query": "MATCH (c:Company) WHERE c.name = $company RETURN c.name AS company, c.type AS type",
+  "params": {"company": "TSMC"},
+  "intent": "Look up the type of a company",
+  "explanation": "Match the company by name and return its type.",
+  "read_only": true
+}
+
+Question: Who supplies chips to OpenAI?
+{
+  "query": "MATCH (supplier:Company)-[:SUPPLIES_CHIPS_TO]->(customer:Company) WHERE customer.name = $company RETURN supplier.name AS supplier ORDER BY supplier.name",
+  "params": {"company": "OpenAI"},
+  "intent": "Find chip suppliers for a company",
+  "explanation": "Traverse incoming SUPPLIES_CHIPS_TO relationships to find suppliers.",
+  "read_only": true
+}
+
+Question: Trace the supply chain from ASML to OpenAI.
+{
+  "query": "MATCH path = (source:Company)-[*1..4]->(target:Company) WHERE source.name = $source AND target.name = $target RETURN path LIMIT 5",
+  "params": {"source": "ASML", "target": "OpenAI"},
+  "intent": "Trace a multi-hop supply chain path",
+  "explanation": "Search for directed paths from the source company to the target company and return a few matching paths.",
+  "read_only": true
+}
