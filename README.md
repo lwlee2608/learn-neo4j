@@ -20,7 +20,7 @@ Main API server. Starts an HTTP server (Gin) exposing REST endpoints for queryin
 
 ### `cmd/seed-data`
 
-Populates Neo4j with sample AI supply chain data — companies (NVIDIA, TSMC, OpenAI, etc.) and relationships between them (SUPPLIES_CHIPS_TO, MANUFACTURES_FOR, PROVIDES_CLOUD_FOR, etc.). Clears existing data before seeding.
+Populates Neo4j with sample AI supply chain data — companies (NVIDIA, TSMC, OpenAI, xAI, Mistral AI, Cohere, Broadcom, etc.) and relationships between them (SUPPLIES_CHIPS_TO, MANUFACTURES_FOR, PROVIDES_CLOUD_FOR, etc.). Clears existing data before seeding.
 
 ### `cmd/ask-cypher`
 

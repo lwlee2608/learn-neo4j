@@ -20,7 +20,7 @@ docker compose up -d
 make seed
 ```
 
-This populates Neo4j with AI supply chain companies and their relationships.
+This populates Neo4j with AI supply chain companies and their relationships, including NVIDIA, TSMC, OpenAI, xAI, Mistral AI, Cohere, Broadcom, and more.
 
 ## Run the App
 
@@ -35,11 +35,11 @@ The server starts on http://localhost:8080.
 ```bash
 # Create a company
 curl -X POST localhost:8080/api/v1/companies -H 'Content-Type: application/json' \
-  -d '{"name":"xAI","type":"ai_lab","founded":2023,"hq":"Austin"}'
+  -d '{"name":"Perplexity","type":"ai_lab","founded":2022,"hq":"San Francisco"}'
 
 # Create a relationship
 curl -X POST localhost:8080/api/v1/relationships/supplies-chips-to -H 'Content-Type: application/json' \
-  -d '{"supplier_name":"NVIDIA","client_name":"xAI"}'
+  -d '{"supplier_name":"NVIDIA","client_name":"Perplexity"}'
 
 # Get company with all relationships
 curl localhost:8080/api/v1/companies/NVIDIA

@@ -74,6 +74,22 @@ func main() {
 			"description": "Oracle's cloud infrastructure platform based in Austin. Provides cloud compute for OpenAI training runs. Competes with AWS, Azure, Google Cloud, and CoreWeave."},
 		{"name": "CoreWeave", "type": "cloud_provider", "founded": 2017, "hq": "Roseland",
 			"description": "GPU-focused cloud provider based in Roseland, New Jersey. Specializes in NVIDIA GPU clusters for AI workloads. Provides compute for OpenAI and Meta AI. Competes with AWS, Azure, Google Cloud, and Oracle Cloud."},
+		{"name": "xAI", "type": "ai_lab", "founded": 2023, "hq": "San Francisco",
+			"description": "AI lab founded by Elon Musk in 2023. Develops Grok models and relies heavily on NVIDIA GPUs and large GPU clusters. Competes with OpenAI, Anthropic, and other frontier model labs."},
+		{"name": "Mistral AI", "type": "ai_lab", "founded": 2023, "hq": "Paris",
+			"description": "Paris-based AI lab building open and commercial foundation models. Uses large-scale GPU infrastructure and partners with major cloud platforms for model training and distribution. Competes with OpenAI and Anthropic."},
+		{"name": "Cohere", "type": "ai_lab", "founded": 2019, "hq": "Toronto",
+			"description": "Toronto-based AI company focused on enterprise language models and retrieval systems. Uses cloud and accelerator partners for training and serving. Competes with OpenAI and Anthropic in enterprise AI deployments."},
+		{"name": "Broadcom", "type": "chip_designer", "founded": 1961, "hq": "Palo Alto",
+			"description": "American semiconductor and infrastructure software company headquartered in Palo Alto. Designs networking and custom accelerator silicon used in AI data centers and cloud infrastructure. Relies on external foundry partners for fabrication."},
+		{"name": "GlobalFoundries", "type": "manufacturer", "founded": 2009, "hq": "Malta",
+			"description": "US-headquartered semiconductor foundry with manufacturing in the US, Europe, and Asia. Fabricates chips for a range of customers, including networking and connectivity suppliers. Competes with larger foundries for specialty and mature nodes."},
+		{"name": "Intel Foundry", "type": "manufacturer", "founded": 2021, "hq": "Santa Clara",
+			"description": "Intel's dedicated foundry business serving internal products and external customers. Expanding advanced-node manufacturing capacity in the US and Europe. Competes with TSMC and Samsung Foundry for foundry customers."},
+		{"name": "Lambda", "type": "cloud_provider", "founded": 2012, "hq": "San Jose",
+			"description": "GPU cloud provider based in San Jose, California. Offers NVIDIA-based compute for AI training and inference workloads. Competes with CoreWeave and hyperscale cloud providers for GPU-first customers."},
+		{"name": "Alibaba Cloud", "type": "cloud_provider", "founded": 2009, "hq": "Hangzhou",
+			"description": "Cloud computing platform of Alibaba Group headquartered in Hangzhou. Provides infrastructure and AI services in China and globally. Competes with AWS, Microsoft Azure, and Google Cloud, especially in APAC markets."},
 	}
 	for _, c := range companies {
 		run(ctx, driver, "CREATE (:Company {name: $name, type: $type, founded: $founded, hq: $hq, description: $description})", c)
@@ -84,6 +100,8 @@ func main() {
 	suppliesEquipment := []map[string]any{
 		{"supplier": "ASML", "recipient": "TSMC"},
 		{"supplier": "ASML", "recipient": "Samsung Foundry"},
+		{"supplier": "ASML", "recipient": "GlobalFoundries"},
+		{"supplier": "ASML", "recipient": "Intel Foundry"},
 	}
 	for _, s := range suppliesEquipment {
 		run(ctx, driver,
@@ -98,6 +116,9 @@ func main() {
 		{"manufacturer": "TSMC", "client": "NVIDIA"},
 		{"manufacturer": "TSMC", "client": "AMD"},
 		{"manufacturer": "TSMC", "client": "Intel"},
+		{"manufacturer": "TSMC", "client": "Broadcom"},
+		{"manufacturer": "GlobalFoundries", "client": "Broadcom"},
+		{"manufacturer": "Intel Foundry", "client": "Intel"},
 		{"manufacturer": "Samsung Foundry", "client": "Google DeepMind"},
 		{"manufacturer": "Samsung Foundry", "client": "AWS"},
 	}
@@ -116,7 +137,11 @@ func main() {
 		{"supplier": "NVIDIA", "client": "Meta AI"},
 		{"supplier": "NVIDIA", "client": "Moonshot AI"},
 		{"supplier": "NVIDIA", "client": "z.ai"},
+		{"supplier": "NVIDIA", "client": "xAI"},
+		{"supplier": "NVIDIA", "client": "Mistral AI"},
+		{"supplier": "NVIDIA", "client": "Cohere"},
 		{"supplier": "AMD", "client": "Meta AI"},
+		{"supplier": "AMD", "client": "Microsoft Azure"},
 		{"supplier": "Intel", "client": "Google DeepMind"},
 	}
 	for _, s := range suppliesChips {
@@ -130,11 +155,15 @@ func main() {
 	// PROVIDES_CLOUD_FOR relationships
 	providesCloud := []map[string]any{
 		{"provider": "AWS", "client": "Anthropic"},
+		{"provider": "AWS", "client": "Cohere"},
 		{"provider": "CoreWeave", "client": "OpenAI"},
 		{"provider": "Microsoft Azure", "client": "OpenAI"},
+		{"provider": "Microsoft Azure", "client": "Mistral AI"},
 		{"provider": "Google Cloud", "client": "Google DeepMind"},
 		{"provider": "Oracle Cloud", "client": "OpenAI"},
 		{"provider": "CoreWeave", "client": "Meta AI"},
+		{"provider": "Alibaba Cloud", "client": "Moonshot AI"},
+		{"provider": "Lambda", "client": "xAI"},
 	}
 	for _, p := range providesCloud {
 		run(ctx, driver,
@@ -150,22 +179,30 @@ func main() {
 		{"company": "NVIDIA", "competitor": "Intel"},
 		{"company": "AMD", "competitor": "Intel"},
 		{"company": "TSMC", "competitor": "Samsung Foundry"},
+		{"company": "GlobalFoundries", "competitor": "TSMC"},
 		{"company": "AWS", "competitor": "Microsoft Azure"},
 		{"company": "AWS", "competitor": "Google Cloud"},
 		{"company": "AWS", "competitor": "Oracle Cloud"},
 		{"company": "AWS", "competitor": "CoreWeave"},
+		{"company": "Alibaba Cloud", "competitor": "AWS"},
 		{"company": "Microsoft Azure", "competitor": "Google Cloud"},
 		{"company": "Microsoft Azure", "competitor": "Oracle Cloud"},
 		{"company": "Microsoft Azure", "competitor": "CoreWeave"},
 		{"company": "Google Cloud", "competitor": "Oracle Cloud"},
 		{"company": "Google Cloud", "competitor": "CoreWeave"},
 		{"company": "Oracle Cloud", "competitor": "CoreWeave"},
+		{"company": "Lambda", "competitor": "CoreWeave"},
 		{"company": "OpenAI", "competitor": "Anthropic"},
 		{"company": "OpenAI", "competitor": "Google DeepMind"},
 		{"company": "OpenAI", "competitor": "Meta AI"},
 		{"company": "Anthropic", "competitor": "Google DeepMind"},
 		{"company": "Anthropic", "competitor": "Meta AI"},
 		{"company": "Google DeepMind", "competitor": "Meta AI"},
+		{"company": "xAI", "competitor": "OpenAI"},
+		{"company": "xAI", "competitor": "Anthropic"},
+		{"company": "Mistral AI", "competitor": "OpenAI"},
+		{"company": "Mistral AI", "competitor": "Anthropic"},
+		{"company": "Cohere", "competitor": "OpenAI"},
 		{"company": "Moonshot AI", "competitor": "z.ai"},
 	}
 	for _, c := range competesWith {
